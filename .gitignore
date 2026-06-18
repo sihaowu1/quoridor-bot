@@ -1,5 +1,6 @@
 /.dist
 /.vscode
+/.venv
 
 # C++ compilation
 /simulation/*.exe
