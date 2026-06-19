@@ -1,6 +1,7 @@
 /.dist
 /.vscode
 /.venv
+/__pycache__
 
 # C++ compilation
 /simulation/*.exe
