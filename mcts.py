@@ -23,6 +23,9 @@ class Node:
         self.done = done # whether the game as concluded
         self.parent = parent # link to parent node for backpropagation
         self.action_index = action_index # action index that leads to the current node
+
+        self.nn_v = 0 # value of the node according to value estimation nn
+        self.nn_p = None # next probabilities according to policy estimation nn
     
     def get_UCB_score(self): 
         """
@@ -37,11 +40,16 @@ class Node:
         top_node = self
         if top_node.parent:
             top_node = top_node.parent
-        
+
         # exploration term is sqrt(log(top_node.N) / self.N) 
         # which is inversely proportional to the number of times the node has been visited, wrt the number of vosits of its parent node
         # exploitation term is (self.T / self.N)
-        return (self.T / self.N) + c * sqrt(log(top_node.N) / self.N)
+
+        value_score = (self.T / self.N) 
+        
+        prior_score = c * self.parent.nn_p[self.action_index] * sqrt(log(top_node.N / self.N))
+
+        return value_score + prior_score
     
     def create_child(self): 
         """
@@ -53,46 +61,39 @@ class Node:
             return
         
         actions = []
-        games = []
         for i in range(GAME_ACTIONS): 
-            actions.append(i) 
+            actions.append(i)
+
+        games = []
+        for i in range(len(actions)): 
             new_game = deepcopy(self.game) 
             games.append(new_game) 
         
         child = {} 
+        action_index = 0
         for action, game in zip(actions, games): 
             observation, reward, done, _, _ = game.step(action) 
-            child[action] = Node(game, done, self, observation, action) 
+            child[action] = Node(game, done, self, observation, action_index) 
+            action_index += 1 
         
         self.child = child
 
 
     def rollout(self): 
         """
-        The rollout is a random play from a copy of the current environment with a random action
-        This gives a value for curr node
-        The more rollouts we do, the more accurate the curr node's value becomes
+        Use neural network estimation to approximate current node value and policy
         """
 
-        if self.done:
-            return 
-        
-        v = 0
-        done = False
-        new_game = deepcopy(self.game) 
+        if self.done: 
+            return 0, None
+        else: 
+            obs = np.array([self.observation]) 
+            obs = np.array([tf.reshape(obs, [-1])])
 
-        while not done: 
-            action = new_game.action_space.sample() 
-            observation, reward, done, _, _ = new_game.step(action) 
+            v = policy_v(obs) 
+            p = policy_p(obs) 
 
-            v = v + reward 
-
-            if done: 
-                new_game.reset()
-                new_game.close() 
-                break
-
-        return v
+            return v.numpy().flatten()[0], p.numpy().flatten()
 
 
     def explore(self): 
@@ -119,12 +120,15 @@ class Node:
             current = child[action] 
         
         if current.N < 1: 
-            current.T = current.T + current.rollout() 
+            current.nn_v, current.nn_p = current.rollout()
+            current.T = current.T + current.nn_v
         else: 
             current.create_child()
             if current.child: 
                 current = random.choice(current.child) 
-            current.T = current.T + current.rollout() 
+
+            current.nn_v, current.nn_p = current.rollout()
+            current.T = current.T + current.nn_v
         
         current.N += 1
 
@@ -134,6 +138,7 @@ class Node:
             parent = parent.parent 
             parent.N += 1
             parent.T = parent.T + current.T
+        
 
     def next(self): 
         """
@@ -151,14 +156,13 @@ class Node:
 
         max_N = max(node.N for node in child.values()) 
 
-        max_children = [c for a, c in child.items() if c.N == max_N] 
+        probs = [node.N / max_N for node in child.values()]
+        probs /= np.sum(probs) 
 
-        if len(max_children) == 0: 
-            print('Error zero length ', max_N) 
+        next_children = random.choices(list(child.values()), weights=probs)[0]
 
-        max_child = random.choice(max_children) 
-
-        return max_child, max_child.action_index
+        return next_children, next_children.action_index, next_children.observation, probs, self.observation
+    
 
     def detach_parent(self): 
         del self.parent
