@@ -32,6 +32,8 @@ policy_p.compile(optimizer=keras.optimizers.Adam(),
 # tunable constants
 c_puct = 1.0            # exploration weight in the PUCT formula
 MCTS_POLICY_EXPLORE = 100  # number of simulations per move
+DIRICHLET_FRACTION = 0.25  # weight of the root exploration noise
+DIRICHLET_ALPHA_SCALE = 10.0  # alpha = scale / num_legal_actions
 
 
 class Node:
@@ -226,18 +228,49 @@ class Node:
         self.parent = None
 
 
-def Policy_Player_MCTS(mytree, greedy=False):
+def add_root_noise(node):
+    """
+    Mix Dirichlet noise into the root priors (self-play exploration, as in
+    the AlphaZero paper): p = (1 - eps) * p + eps * Dir(alpha), applied only
+    on the legal actions so the noised priors still sum to 1.
+    """
+    legal = node.game.legal_actions()
+    if len(legal) < 2:
+        return
+    alpha = DIRICHLET_ALPHA_SCALE / len(legal)
+    noise = np.random.dirichlet([alpha] * len(legal))
+    p = node.nn_p.copy()
+    p[legal] = (1 - DIRICHLET_FRACTION) * p[legal] + DIRICHLET_FRACTION * noise
+    node.nn_p = p
+
+
+def Policy_Player_MCTS(mytree, greedy=False, root_noise=False):
     """
     Core of AlphaZero move selection:
     * run MCTS_POLICY_EXPLORE simulations from the current node to gather statistics
     * pick the next action (sampled by visit count, or greedily if requested)
+
+    With root_noise=True (self-play only) Dirichlet noise is mixed into the
+    root priors before the simulations, so the search keeps exploring moves
+    the raw policy would dismiss.
 
     Returns the sub-tree rooted at the chosen action (detached from its parent
     so that the statistics gathered so far are reused on the next move).
     Because node values are negamax (relative to the player to move at each
     node), the same tree is valid for both players in self-play.
     """
-    for _ in range(MCTS_POLICY_EXPLORE):
+    simulations = MCTS_POLICY_EXPLORE
+
+    if root_noise and not mytree.done:
+        if mytree.nn_p is None:
+            # A fresh root has no priors yet; the first simulation evaluates
+            # it (rollout) without descending, so noise applied after it
+            # still precedes every child selection.
+            mytree.explore()
+            simulations -= 1
+        add_root_noise(mytree)
+
+    for _ in range(simulations):
         mytree.explore()
 
     next_tree, next_action, obs, p, p_obs = mytree.next(greedy=greedy)

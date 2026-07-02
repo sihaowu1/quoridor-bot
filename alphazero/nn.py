@@ -4,7 +4,7 @@ from alphazero.game_config import GAME_ACTIONS
 
 tf.keras.backend.set_floatx('float64') 
 
-HIDDEN_STATES = 64
+HIDDEN_STATES = 128
 
 """
 2 neural networks
