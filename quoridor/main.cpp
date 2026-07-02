@@ -62,6 +62,8 @@ int main(int argc, char** argv) {
         game.step(action);
     }
 
+    if (!game.done()) return 0;  // EOF on stdin mid-game
+
     std::cout << '\n' << game.to_string() << '\n';
     if (game.winner() == 0) {
         std::cout << "Draw (move limit reached).\n";

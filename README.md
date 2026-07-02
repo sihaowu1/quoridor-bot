@@ -106,28 +106,15 @@ game or board size is refused with a clear error.
 
 ## Training on Google Colab
 
-Point the checkpoint directory at Google Drive so training survives
-runtime disconnects, then simply re-run the training cell after any crash —
-it resumes exactly where it left off (same episode, optimizer momentum and
-replay buffer).
+Open `alphazero/notebook.ipynb` in Colab and `Run all` on a GPU runtime —
+it is the complete workflow: mounts Google Drive, clones/updates this repo,
+builds the C++ engine with Colab's g++ (verifying the pipeline selected it),
+optionally cross-validates the backends, points `AZ_CHECKPOINT_DIR` at
+Drive and trains. After any crash or disconnect, `Run all` again: training
+resumes exactly where it left off (same episode, optimizer momentum and
+replay buffer) from the Drive checkpoint, and the plots cell can be re-run
+mid-training to monitor progress.
 
-```python
-# Cell 1 — persistent storage
-from google.colab import drive
-drive.mount('/content/drive')
-
-# Cell 2 — code
-!git clone https://github.com/<you>/quoridor-bot /content/quoridor-bot
-%cd /content/quoridor-bot
-
-# Cell 3 — train; safe to re-run after a crash or on a fresh runtime
-import os
-os.environ['AZ_CHECKPOINT_DIR'] = '/content/drive/MyDrive/quoridor-checkpoints'
-os.environ['AZ_EPISODES'] = '2000'
-!python -m alphazero.run
-```
-
-Colab's preinstalled `tensorflow`, `numpy` and `matplotlib` are all the
-pipeline needs (no `uv sync` there). The training plots in the Drive folder
-are refreshed at every evaluation, so progress can be monitored while it
-runs.
+Colab's preinstalled `tensorflow`, `numpy` and `matplotlib` plus a
+`pip install pybind11` (done by the notebook) are all the pipeline needs —
+no `uv sync` there.

@@ -12,10 +12,7 @@ Run: python -m alphazero.test_alphazero_quoridor
 """
 
 from copy import deepcopy
-import random
 import sys
-
-import numpy as np
 
 from alphazero import game_config
 from alphazero.quoridor import NUM_PAWN_ACTIONS, wall_action
@@ -55,8 +52,10 @@ def test_finds_immediate_win():
 
 
 def test_finds_immediate_win_as_second_player():
-    # Same tactic for player -1 (canonical N = absolute S toward row 4).
-    game = _make_position(p1=(1, 0), p2=(3, 2), to_play=-1, walls=(0, 0))
+    # Same tactic for player -1 (canonical N = absolute S toward the
+    # bottom row); O must sit one step from its goal on ANY board size.
+    game = _make_position(p1=(1, 0), p2=(BOARD_SIZE - 2, 2), to_play=-1,
+                          walls=(0, 0))
     root = _search(game)
     _, action, _, _, _ = root.next(greedy=True)
     assert action == 0, f'expected winning move 0 (N), got {action}'
@@ -135,8 +134,15 @@ def test_self_play_episode_targets():
 
 
 if __name__ == '__main__':
-    random.seed(0)
-    np.random.seed(0)
+    from tensorflow import keras
+
+    # Seeds python/numpy AND TensorFlow: the network weights were the one
+    # unseeded input, making these tactical assertions flaky (an unlucky
+    # untrained net can bury a win-in-1 at 9x9 within the simulation
+    # budget).  Fully seeded, the run is deterministic — and because the
+    # C++ and Python envs are lockstep-identical, AZ_BACKEND=cpp and
+    # AZ_BACKEND=py must produce identical search decisions here.
+    keras.utils.set_random_seed(0)
 
     tests = [
         test_finds_immediate_win,
