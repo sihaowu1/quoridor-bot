@@ -9,7 +9,7 @@ perspective of the player to move), rewards from the mover's perspective,
 Quoridor will plug in here later by satisfying the same interface.
 """
 
-from tic_tac_toe import TicTacToe, GAME_ACTIONS, GAME_OBS
+from alphazero.tic_tac_toe import TicTacToe, GAME_ACTIONS, GAME_OBS
 
 GAME_NAME = 'TicTacToe'
 

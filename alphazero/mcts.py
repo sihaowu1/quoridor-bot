@@ -4,8 +4,8 @@ import random
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from game_config import GAME_ACTIONS
-from nn import PolicyV, PolicyP
+from alphazero.game_config import GAME_ACTIONS
+from alphazero.nn import PolicyV, PolicyP
 
 # ---------------------------------------------------------------------------
 # Shared networks.

@@ -22,11 +22,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from game_config import make_game
-from replay_buffer import ReplayBuffer
+from alphazero.game_config import make_game
+from alphazero.replay_buffer import ReplayBuffer
 # Import the SAME network instances the MCTS uses, so training the networks
 # actually improves self-play.
-from mcts import Node, Policy_Player_MCTS, policy_v, policy_p
+from alphazero.mcts import Node, Policy_Player_MCTS, policy_v, policy_p
 
 
 BUFFER_SIZE = 3000

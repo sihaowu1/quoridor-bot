@@ -15,10 +15,10 @@ import random
 
 import numpy as np
 
-from tic_tac_toe import TicTacToe, GAME_ACTIONS
-from mcts import Node
-from replay_buffer import ReplayBuffer
-from run import self_play_episode
+from alphazero.tic_tac_toe import TicTacToe, GAME_ACTIONS
+from alphazero.mcts import Node
+from alphazero.replay_buffer import ReplayBuffer
+from alphazero.run import self_play_episode
 
 SIMULATIONS = 400
 

@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras 
-from game_config import GAME_ACTIONS
+from alphazero.game_config import GAME_ACTIONS
 
 tf.keras.backend.set_floatx('float64') 
 
