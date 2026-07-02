@@ -7,13 +7,21 @@ values entering the tree, and negamax sign flipping during backpropagation.
 A search missing any of those fixes fails these tests regardless of how the
 networks are initialised.
 
-Run: python test_alphazero_ttt.py
+Run: AZ_GAME=ttt python -m alphazero.test_alphazero_ttt
+(game_config defaults to Quoridor; the env var points it back here.)
 """
 
 from copy import deepcopy
 import random
+import sys
 
 import numpy as np
+
+from alphazero import game_config
+
+if game_config.GAME_NAME != 'TicTacToe':  # pragma: no cover
+    sys.exit('game_config is not on TicTacToe; '
+             'run with AZ_GAME=ttt python -m alphazero.test_alphazero_ttt')
 
 from alphazero.tic_tac_toe import TicTacToe, GAME_ACTIONS
 from alphazero.mcts import Node

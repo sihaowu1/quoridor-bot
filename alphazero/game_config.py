@@ -35,8 +35,8 @@ else:
     # The one place to change when scaling up: the full game is
     # BOARD_SIZE = 9, WALLS = 10 (expect training to need far more
     # compute; see README).
-    BOARD_SIZE = 5
-    WALLS = 3
+    BOARD_SIZE = 9
+    WALLS = 10
 
     GAME_ACTIONS = num_actions(BOARD_SIZE)
     GAME_OBS = obs_size(BOARD_SIZE)

@@ -1,5 +1,5 @@
 """
-AlphaZero training driver (two-player self-play).
+AlphaZero training driver (two-player self-play), crash-safe.
 
 Each episode plays one full game of self-play in which BOTH sides are moved
 by the same MCTS + networks.  Every visited position is stored with:
@@ -14,8 +14,21 @@ Self-play exploration (AlphaZero-style):
     TEMP_MOVES plies, then played greedily, so long games don't degenerate
     into random walks while the opening still gets explored.
 
+Checkpointing / resume (built for Colab, where the runtime can die at any
+moment): the complete training state — network weights, optimizer state,
+replay buffer, metrics, RNG — is saved atomically every CHECKPOINT_EVERY
+episodes, and ``train()`` automatically resumes from the latest good
+checkpoint when one exists.  Point AZ_CHECKPOINT_DIR at persistent storage
+(e.g. a mounted Google Drive folder) and simply re-run after a crash.
+
+Environment variables:
+  AZ_CHECKPOINT_DIR    where checkpoints, weights and plots go
+                       (default: checkpoints/)
+  AZ_CHECKPOINT_EVERY  save frequency in episodes (default: 1)
+  AZ_EPISODES          total episodes for the run (default: 300)
+  AZ_GAME              game selection, see game_config.py
+
 Run:  python -m alphazero.run
-Outputs: training plots (*.png) and network weights under checkpoints/.
 """
 
 from copy import deepcopy
@@ -27,8 +40,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from alphazero.game_config import make_game, GAME_NAME
+from alphazero.game_config import make_game, GAME_NAME, GAME_ACTIONS, GAME_OBS
 from alphazero.replay_buffer import ReplayBuffer
+from alphazero.checkpoint import (save_checkpoint, load_checkpoint,
+                                  restore_networks, restore_buffer,
+                                  restore_rng)
 # Import the SAME network instances the MCTS uses, so training the networks
 # actually improves self-play.
 from alphazero.mcts import Node, Policy_Player_MCTS, policy_v, policy_p
@@ -38,12 +54,24 @@ BUFFER_SIZE = 3000
 BATCH_SIZE = 128
 TRAIN_BATCHES_PER_EPISODE = 4  # Quoridor games yield ~10-60 positions each
 
-EPISODES = 300
+EPISODES = int(os.environ.get('AZ_EPISODES', '300'))
 TEMP_MOVES = 8       # plies sampled by visit count before turning greedy
 EVAL_EVERY = 50      # evaluate against a random player every N episodes
 EVAL_GAMES = 20
 
 METRIC_WINDOW = 50   # trailing window for the progress metrics
+
+CHECKPOINT_DIR = os.environ.get('AZ_CHECKPOINT_DIR', 'checkpoints')
+CHECKPOINT_EVERY = int(os.environ.get('AZ_CHECKPOINT_EVERY', '1'))
+CHECKPOINT_FILE = f'{GAME_NAME}_train_state.pkl'
+
+# Validated against a checkpoint before resuming, so state from one game /
+# board size can never be silently loaded into another configuration.
+CHECKPOINT_META = {
+    'game': GAME_NAME,
+    'actions': GAME_ACTIONS,
+    'obs': GAME_OBS,
+}
 
 
 def self_play_episode(replay_buffer):
@@ -132,50 +160,23 @@ def evaluate_vs_random(games=EVAL_GAMES):
     return results
 
 
-def train():
-    replay_buffer = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE)
+def _new_histories():
+    return {
+        'outcomes': [],       # winner of each self-play game (+1 / -1 / 0)
+        'game_lengths': [],   # plies per self-play game
+        'p1_win_rates': [],   # trailing share of games won by player +1
+        'draw_rates': [],     # trailing share of drawn (truncated) games
+        'v_losses': [],
+        'p_losses': [],
+        'eval_history': [],   # (episode, results dict)
+    }
 
-    outcomes = []        # winner of each self-play game (+1 / -1 / 0)
-    game_lengths = []    # plies per self-play game
-    p1_win_rates = []    # trailing share of games won by the first player
-    draw_rates = []      # trailing share of drawn (truncated) games
-    v_losses = []
-    p_losses = []
-    eval_history = []    # (episode, results dict)
 
-    for e in range(EPISODES):
-        winner, moves = self_play_episode(replay_buffer)
-        outcomes.append(winner)
-        game_lengths.append(moves)
+def _write_plots(h):
+    """Render the metric plots into CHECKPOINT_DIR (refreshed during the
+    run so long Colab sessions can be monitored from Drive)."""
+    game_lengths = h['game_lengths']
 
-        window = outcomes[-METRIC_WINDOW:]
-        p1_win_rates.append(window.count(1) / len(window))
-        draw_rates.append(window.count(0) / len(window))
-
-        print(f'episode {e + 1}: winner {winner:+d} in {moves} moves, '
-              f'last {len(window)}: '
-              f'P1 {p1_win_rates[-1]:.2f} / draw {draw_rates[-1]:.2f}, '
-              f'avg length {np.mean(game_lengths[-METRIC_WINDOW:]):.1f}',
-              flush=True)
-
-        if len(replay_buffer) > BATCH_SIZE:
-            for _ in range(TRAIN_BATCHES_PER_EPISODE):
-                loss_v, loss_p = train_networks(replay_buffer)
-            v_losses.append(loss_v)
-            p_losses.append(loss_p)
-
-        if (e + 1) % EVAL_EVERY == 0:
-            results = evaluate_vs_random()
-            eval_history.append((e + 1, results))
-            print(f'--- eval vs random after episode {e + 1}: {results}',
-                  flush=True)
-
-    # persist the trained networks
-    os.makedirs('checkpoints', exist_ok=True)
-    policy_v.save_weights('checkpoints/policy_v.weights.h5')
-    policy_p.save_weights('checkpoints/policy_p.weights.h5')
-
-    # plots (rendered once at the end so the training loop never blocks)
     plt.figure()
     plt.plot(game_lengths, alpha=0.3, label='per game')
     if len(game_lengths) >= METRIC_WINDOW:
@@ -186,29 +187,103 @@ def train():
                  label=f'trailing {METRIC_WINDOW}')
     plt.legend()
     plt.title(f'{GAME_NAME} self-play game length')
-    plt.savefig('game_length.png')
+    plt.savefig(os.path.join(CHECKPOINT_DIR, 'game_length.png'))
 
     plt.figure()
-    plt.plot(p1_win_rates, label='P1 win rate')
-    plt.plot(draw_rates, label='draw rate')
+    plt.plot(h['p1_win_rates'], label='P1 win rate')
+    plt.plot(h['draw_rates'], label='draw rate')
     plt.ylim(0, 1)
     plt.legend()
     plt.title(f'self-play outcomes (trailing {METRIC_WINDOW} episodes)')
-    plt.savefig('win_rate.png')
+    plt.savefig(os.path.join(CHECKPOINT_DIR, 'win_rate.png'))
 
     plt.figure()
-    plt.plot(v_losses)
+    plt.plot(h['v_losses'])
     plt.title('value loss')
-    plt.savefig('value_loss.png')
+    plt.savefig(os.path.join(CHECKPOINT_DIR, 'value_loss.png'))
 
     plt.figure()
-    plt.plot(p_losses)
+    plt.plot(h['p_losses'])
     plt.title('policy loss')
-    plt.savefig('policy_loss.png')
+    plt.savefig(os.path.join(CHECKPOINT_DIR, 'policy_loss.png'))
 
-    if eval_history:
+    plt.close('all')
+
+
+def train():
+    os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+    replay_buffer = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE)
+    histories = _new_histories()
+    start_episode = 0
+
+    state = load_checkpoint(CHECKPOINT_DIR, CHECKPOINT_FILE)
+    if state is not None:
+        if state['meta'] != CHECKPOINT_META:
+            raise SystemExit(
+                f'checkpoint in {CHECKPOINT_DIR} is for {state["meta"]}, '
+                f'but the current config is {CHECKPOINT_META}; move the '
+                f'old checkpoint away or point AZ_CHECKPOINT_DIR elsewhere')
+        restore_networks(state, policy_v, policy_p, GAME_OBS)
+        restore_buffer(state, replay_buffer)
+        restore_rng(state)
+        histories = state['histories']
+        start_episode = state['episode']
+        print(f'resumed from checkpoint: episode {start_episode}, '
+              f'{len(replay_buffer)} buffered positions', flush=True)
+    else:
+        print(f'no checkpoint in {CHECKPOINT_DIR}; starting fresh',
+              flush=True)
+
+    outcomes = histories['outcomes']
+    game_lengths = histories['game_lengths']
+
+    for e in range(start_episode, EPISODES):
+        winner, moves = self_play_episode(replay_buffer)
+        outcomes.append(winner)
+        game_lengths.append(moves)
+
+        window = outcomes[-METRIC_WINDOW:]
+        histories['p1_win_rates'].append(window.count(1) / len(window))
+        histories['draw_rates'].append(window.count(0) / len(window))
+
+        print(f'episode {e + 1}: winner {winner:+d} in {moves} moves, '
+              f'last {len(window)}: '
+              f'P1 {histories["p1_win_rates"][-1]:.2f} / '
+              f'draw {histories["draw_rates"][-1]:.2f}, '
+              f'avg length {np.mean(game_lengths[-METRIC_WINDOW:]):.1f}',
+              flush=True)
+
+        if len(replay_buffer) > BATCH_SIZE:
+            for _ in range(TRAIN_BATCHES_PER_EPISODE):
+                loss_v, loss_p = train_networks(replay_buffer)
+            histories['v_losses'].append(loss_v)
+            histories['p_losses'].append(loss_p)
+
+        if (e + 1) % EVAL_EVERY == 0:
+            results = evaluate_vs_random()
+            histories['eval_history'].append((e + 1, results))
+            print(f'--- eval vs random after episode {e + 1}: {results}',
+                  flush=True)
+            _write_plots(histories)
+
+        if (e + 1) % CHECKPOINT_EVERY == 0 or e + 1 == EPISODES:
+            save_checkpoint(CHECKPOINT_DIR, CHECKPOINT_FILE, e + 1,
+                            policy_v, policy_p, replay_buffer,
+                            histories, CHECKPOINT_META)
+
+    # persist the trained networks on their own (weights-only files usable
+    # without the training state, namespaced by game)
+    policy_v.save_weights(
+        os.path.join(CHECKPOINT_DIR, f'{GAME_NAME}_policy_v.weights.h5'))
+    policy_p.save_weights(
+        os.path.join(CHECKPOINT_DIR, f'{GAME_NAME}_policy_p.weights.h5'))
+
+    _write_plots(histories)
+
+    if histories['eval_history']:
         print('\neval-vs-random history:')
-        for episode, results in eval_history:
+        for episode, results in histories['eval_history']:
             print(f'  episode {episode}: {results}')
 
 

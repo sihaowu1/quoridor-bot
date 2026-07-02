@@ -1,0 +1,343 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1783015217.287558   13695 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1783015217.330718   13695 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+I0000 00:00:1783015218.284126   13695 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1783015230.665161   13695 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+I0000 00:00:1783015230.685985   13695 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+E0000 00:00:1783015239.002915   13695 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+episode 1: winner +0 in 60 moves, last 1: P1 0.00 / draw 1.00, avg length 60.0
+episode 2: winner -1 in 12 moves, last 2: P1 0.00 / draw 0.50, avg length 36.0
+episode 3: winner -1 in 22 moves, last 3: P1 0.00 / draw 0.33, avg length 31.3
+episode 4: winner -1 in 26 moves, last 4: P1 0.00 / draw 0.25, avg length 30.0
+episode 5: winner +1 in 25 moves, last 5: P1 0.20 / draw 0.20, avg length 29.0
+W0000 00:00:1783015279.411343   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.412000   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.412247   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.412575   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.412730   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.430468   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.431033   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.431182   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.431441   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.431655   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.938446   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.939044   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.939192   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.939419   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.939569   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.964207   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.965011   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.965404   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.965764   13695 util.cc:163] Not handling type DT_DOUBLE
+W0000 00:00:1783015279.966077   13695 util.cc:163] Not handling type DT_DOUBLE
+episode 6: winner -1 in 34 moves, last 6: P1 0.17 / draw 0.17, avg length 29.8
+episode 7: winner -1 in 52 moves, last 7: P1 0.14 / draw 0.14, avg length 33.0
+episode 8: winner -1 in 28 moves, last 8: P1 0.12 / draw 0.12, avg length 32.4
+episode 9: winner -1 in 22 moves, last 9: P1 0.11 / draw 0.11, avg length 31.2
+episode 10: winner -1 in 18 moves, last 10: P1 0.10 / draw 0.10, avg length 29.9
+episode 11: winner -1 in 30 moves, last 11: P1 0.09 / draw 0.09, avg length 29.9
+episode 12: winner +0 in 60 moves, last 12: P1 0.08 / draw 0.17, avg length 32.4
+episode 13: winner -1 in 32 moves, last 13: P1 0.08 / draw 0.15, avg length 32.4
+episode 14: winner +1 in 21 moves, last 14: P1 0.14 / draw 0.14, avg length 31.6
+episode 15: winner -1 in 16 moves, last 15: P1 0.13 / draw 0.13, avg length 30.5
+episode 16: winner -1 in 8 moves, last 16: P1 0.12 / draw 0.12, avg length 29.1
+episode 17: winner -1 in 34 moves, last 17: P1 0.12 / draw 0.12, avg length 29.4
+episode 18: winner -1 in 26 moves, last 18: P1 0.11 / draw 0.11, avg length 29.2
+episode 19: winner -1 in 26 moves, last 19: P1 0.11 / draw 0.11, avg length 29.1
+episode 20: winner -1 in 16 moves, last 20: P1 0.10 / draw 0.10, avg length 28.4
+episode 21: winner +1 in 15 moves, last 21: P1 0.14 / draw 0.10, avg length 27.8
+episode 22: winner -1 in 18 moves, last 22: P1 0.14 / draw 0.09, avg length 27.3
+episode 23: winner -1 in 18 moves, last 23: P1 0.13 / draw 0.09, avg length 26.9
+episode 24: winner -1 in 18 moves, last 24: P1 0.12 / draw 0.08, avg length 26.5
+episode 25: winner +1 in 17 moves, last 25: P1 0.16 / draw 0.08, avg length 26.2
+episode 26: winner +1 in 17 moves, last 26: P1 0.19 / draw 0.08, avg length 25.8
+episode 27: winner -1 in 12 moves, last 27: P1 0.19 / draw 0.07, avg length 25.3
+episode 28: winner +1 in 17 moves, last 28: P1 0.21 / draw 0.07, avg length 25.0
+episode 29: winner +1 in 35 moves, last 29: P1 0.24 / draw 0.07, avg length 25.3
+episode 30: winner -1 in 16 moves, last 30: P1 0.23 / draw 0.07, avg length 25.0
+episode 31: winner +1 in 53 moves, last 31: P1 0.26 / draw 0.06, avg length 25.9
+episode 32: winner -1 in 22 moves, last 32: P1 0.25 / draw 0.06, avg length 25.8
+episode 33: winner +1 in 19 moves, last 33: P1 0.27 / draw 0.06, avg length 25.6
+episode 34: winner -1 in 16 moves, last 34: P1 0.26 / draw 0.06, avg length 25.3
+episode 35: winner -1 in 16 moves, last 35: P1 0.26 / draw 0.06, avg length 25.1
+episode 36: winner -1 in 16 moves, last 36: P1 0.25 / draw 0.06, avg length 24.8
+episode 37: winner -1 in 20 moves, last 37: P1 0.24 / draw 0.05, avg length 24.7
+episode 38: winner -1 in 16 moves, last 38: P1 0.24 / draw 0.05, avg length 24.4
+episode 39: winner -1 in 34 moves, last 39: P1 0.23 / draw 0.05, avg length 24.7
+episode 40: winner +1 in 17 moves, last 40: P1 0.25 / draw 0.05, avg length 24.5
+episode 41: winner -1 in 22 moves, last 41: P1 0.24 / draw 0.05, avg length 24.4
+episode 42: winner -1 in 16 moves, last 42: P1 0.24 / draw 0.05, avg length 24.2
+episode 43: winner +1 in 15 moves, last 43: P1 0.26 / draw 0.05, avg length 24.0
+episode 44: winner -1 in 14 moves, last 44: P1 0.25 / draw 0.05, avg length 23.8
+episode 45: winner +0 in 60 moves, last 45: P1 0.24 / draw 0.07, avg length 24.6
+episode 46: winner -1 in 22 moves, last 46: P1 0.24 / draw 0.07, avg length 24.5
+episode 47: winner -1 in 18 moves, last 47: P1 0.23 / draw 0.06, avg length 24.4
+episode 48: winner -1 in 26 moves, last 48: P1 0.23 / draw 0.06, avg length 24.4
+episode 49: winner +1 in 15 moves, last 49: P1 0.24 / draw 0.06, avg length 24.2
+episode 50: winner -1 in 20 moves, last 50: P1 0.24 / draw 0.06, avg length 24.2
+--- eval vs random after episode 50: {'win': 15, 'draw': 3, 'loss': 2}
+episode 51: winner -1 in 30 moves, last 50: P1 0.24 / draw 0.04, avg length 23.6
+episode 52: winner -1 in 16 moves, last 50: P1 0.24 / draw 0.04, avg length 23.6
+episode 53: winner -1 in 16 moves, last 50: P1 0.24 / draw 0.04, avg length 23.5
+episode 54: winner -1 in 16 moves, last 50: P1 0.24 / draw 0.04, avg length 23.3
+episode 55: winner +1 in 17 moves, last 50: P1 0.24 / draw 0.04, avg length 23.2
+episode 56: winner +1 in 33 moves, last 50: P1 0.26 / draw 0.04, avg length 23.1
+episode 57: winner +1 in 9 moves, last 50: P1 0.28 / draw 0.04, avg length 22.3
+episode 58: winner +1 in 15 moves, last 50: P1 0.30 / draw 0.04, avg length 22.0
+episode 59: winner +1 in 17 moves, last 50: P1 0.32 / draw 0.04, avg length 21.9
+episode 60: winner +1 in 13 moves, last 50: P1 0.34 / draw 0.04, avg length 21.8
+episode 61: winner -1 in 16 moves, last 50: P1 0.34 / draw 0.04, avg length 21.5
+episode 62: winner +1 in 21 moves, last 50: P1 0.36 / draw 0.02, avg length 20.8
+episode 63: winner +1 in 15 moves, last 50: P1 0.38 / draw 0.02, avg length 20.4
+episode 64: winner -1 in 18 moves, last 50: P1 0.36 / draw 0.02, avg length 20.4
+episode 65: winner +1 in 17 moves, last 50: P1 0.38 / draw 0.02, avg length 20.4
+episode 66: winner -1 in 16 moves, last 50: P1 0.38 / draw 0.02, avg length 20.5
+episode 67: winner -1 in 16 moves, last 50: P1 0.38 / draw 0.02, avg length 20.2
+episode 68: winner +1 in 9 moves, last 50: P1 0.40 / draw 0.02, avg length 19.8
+episode 69: winner +1 in 17 moves, last 50: P1 0.42 / draw 0.02, avg length 19.7
+episode 70: winner -1 in 16 moves, last 50: P1 0.42 / draw 0.02, avg length 19.7
+episode 71: winner +0 in 60 moves, last 50: P1 0.40 / draw 0.04, avg length 20.6
+episode 72: winner +1 in 13 moves, last 50: P1 0.42 / draw 0.04, avg length 20.5
+episode 73: winner -1 in 18 moves, last 50: P1 0.42 / draw 0.04, avg length 20.5
+episode 74: winner +1 in 17 moves, last 50: P1 0.44 / draw 0.04, avg length 20.4
+episode 75: winner -1 in 18 moves, last 50: P1 0.42 / draw 0.04, avg length 20.5
+episode 76: winner +1 in 15 moves, last 50: P1 0.42 / draw 0.04, avg length 20.4
+episode 77: winner -1 in 14 moves, last 50: P1 0.42 / draw 0.04, avg length 20.5
+episode 78: winner +1 in 33 moves, last 50: P1 0.42 / draw 0.04, avg length 20.8
+episode 79: winner -1 in 18 moves, last 50: P1 0.40 / draw 0.04, avg length 20.4
+episode 80: winner +1 in 17 moves, last 50: P1 0.42 / draw 0.04, avg length 20.5
+episode 81: winner -1 in 22 moves, last 50: P1 0.40 / draw 0.04, avg length 19.8
+episode 82: winner -1 in 16 moves, last 50: P1 0.40 / draw 0.04, avg length 19.7
+episode 83: winner +1 in 21 moves, last 50: P1 0.40 / draw 0.04, avg length 19.8
+episode 84: winner +0 in 60 moves, last 50: P1 0.40 / draw 0.06, avg length 20.6
+episode 85: winner -1 in 12 moves, last 50: P1 0.40 / draw 0.06, avg length 20.6
+episode 86: winner +1 in 9 moves, last 50: P1 0.42 / draw 0.06, avg length 20.4
+episode 87: winner -1 in 16 moves, last 50: P1 0.42 / draw 0.06, avg length 20.3
+episode 88: winner +1 in 19 moves, last 50: P1 0.44 / draw 0.06, avg length 20.4
+episode 89: winner +1 in 13 moves, last 50: P1 0.46 / draw 0.06, avg length 20.0
+episode 90: winner +1 in 21 moves, last 50: P1 0.46 / draw 0.06, avg length 20.1
+episode 91: winner +1 in 13 moves, last 50: P1 0.48 / draw 0.06, avg length 19.9
+episode 92: winner -1 in 20 moves, last 50: P1 0.48 / draw 0.06, avg length 20.0
+episode 93: winner +1 in 17 moves, last 50: P1 0.48 / draw 0.06, avg length 20.0
+episode 94: winner +1 in 17 moves, last 50: P1 0.50 / draw 0.06, avg length 20.1
+episode 95: winner +1 in 13 moves, last 50: P1 0.52 / draw 0.04, avg length 19.1
+episode 96: winner +0 in 60 moves, last 50: P1 0.52 / draw 0.06, avg length 19.9
+episode 97: winner -1 in 16 moves, last 50: P1 0.52 / draw 0.06, avg length 19.8
+episode 98: winner +1 in 13 moves, last 50: P1 0.54 / draw 0.06, avg length 19.6
+episode 99: winner +1 in 17 moves, last 50: P1 0.54 / draw 0.06, avg length 19.6
+episode 100: winner -1 in 20 moves, last 50: P1 0.54 / draw 0.06, avg length 19.6
+--- eval vs random after episode 100: {'win': 14, 'draw': 3, 'loss': 3}
+episode 101: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.06, avg length 19.3
+episode 102: winner -1 in 8 moves, last 50: P1 0.54 / draw 0.06, avg length 19.2
+episode 103: winner -1 in 18 moves, last 50: P1 0.54 / draw 0.06, avg length 19.2
+episode 104: winner +1 in 17 moves, last 50: P1 0.56 / draw 0.06, avg length 19.2
+episode 105: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.06, avg length 19.2
+episode 106: winner -1 in 16 moves, last 50: P1 0.52 / draw 0.06, avg length 18.9
+episode 107: winner -1 in 20 moves, last 50: P1 0.50 / draw 0.06, avg length 19.1
+episode 108: winner +1 in 15 moves, last 50: P1 0.50 / draw 0.06, avg length 19.1
+episode 109: winner +1 in 21 moves, last 50: P1 0.50 / draw 0.06, avg length 19.2
+episode 110: winner -1 in 16 moves, last 50: P1 0.48 / draw 0.06, avg length 19.2
+episode 111: winner +1 in 17 moves, last 50: P1 0.50 / draw 0.06, avg length 19.3
+episode 112: winner -1 in 18 moves, last 50: P1 0.48 / draw 0.06, avg length 19.2
+episode 113: winner +1 in 13 moves, last 50: P1 0.48 / draw 0.06, avg length 19.2
+episode 114: winner -1 in 16 moves, last 50: P1 0.48 / draw 0.06, avg length 19.1
+episode 115: winner +1 in 21 moves, last 50: P1 0.48 / draw 0.06, avg length 19.2
+episode 116: winner +1 in 13 moves, last 50: P1 0.50 / draw 0.06, avg length 19.1
+episode 117: winner +1 in 9 moves, last 50: P1 0.52 / draw 0.06, avg length 19.0
+episode 118: winner +1 in 15 moves, last 50: P1 0.52 / draw 0.06, avg length 19.1
+episode 119: winner +1 in 9 moves, last 50: P1 0.52 / draw 0.06, avg length 19.0
+episode 120: winner +1 in 9 moves, last 50: P1 0.54 / draw 0.06, avg length 18.8
+episode 121: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.04, avg length 17.9
+episode 122: winner +1 in 13 moves, last 50: P1 0.56 / draw 0.04, avg length 17.9
+episode 123: winner +1 in 19 moves, last 50: P1 0.58 / draw 0.04, avg length 17.9
+episode 124: winner +1 in 13 moves, last 50: P1 0.58 / draw 0.04, avg length 17.9
+episode 125: winner +1 in 11 moves, last 50: P1 0.60 / draw 0.04, avg length 17.7
+episode 126: winner -1 in 14 moves, last 50: P1 0.58 / draw 0.04, avg length 17.7
+episode 127: winner +1 in 19 moves, last 50: P1 0.60 / draw 0.04, avg length 17.8
+episode 128: winner -1 in 16 moves, last 50: P1 0.58 / draw 0.04, avg length 17.5
+episode 129: winner +1 in 13 moves, last 50: P1 0.60 / draw 0.04, avg length 17.4
+episode 130: winner +1 in 13 moves, last 50: P1 0.60 / draw 0.04, avg length 17.3
+episode 131: winner -1 in 20 moves, last 50: P1 0.60 / draw 0.04, avg length 17.2
+episode 132: winner +1 in 9 moves, last 50: P1 0.62 / draw 0.04, avg length 17.1
+episode 133: winner +1 in 9 moves, last 50: P1 0.62 / draw 0.04, avg length 16.9
+episode 134: winner +1 in 15 moves, last 50: P1 0.64 / draw 0.02, avg length 16.0
+episode 135: winner -1 in 10 moves, last 50: P1 0.64 / draw 0.02, avg length 15.9
+episode 136: winner +1 in 15 moves, last 50: P1 0.64 / draw 0.02, avg length 16.0
+episode 137: winner +1 in 19 moves, last 50: P1 0.66 / draw 0.02, avg length 16.1
+episode 138: winner -1 in 16 moves, last 50: P1 0.64 / draw 0.02, avg length 16.0
+episode 139: winner +1 in 13 moves, last 50: P1 0.64 / draw 0.02, avg length 16.0
+episode 140: winner +1 in 9 moves, last 50: P1 0.64 / draw 0.02, avg length 15.8
+episode 141: winner -1 in 8 moves, last 50: P1 0.62 / draw 0.02, avg length 15.7
+episode 142: winner +0 in 60 moves, last 50: P1 0.62 / draw 0.04, avg length 16.5
+episode 143: winner -1 in 32 moves, last 50: P1 0.60 / draw 0.04, avg length 16.8
+episode 144: winner +1 in 17 moves, last 50: P1 0.60 / draw 0.04, avg length 16.8
+episode 145: winner +1 in 17 moves, last 50: P1 0.60 / draw 0.04, avg length 16.9
+episode 146: winner -1 in 10 moves, last 50: P1 0.60 / draw 0.02, avg length 15.9
+episode 147: winner +1 in 35 moves, last 50: P1 0.62 / draw 0.02, avg length 16.3
+episode 148: winner +1 in 9 moves, last 50: P1 0.62 / draw 0.02, avg length 16.2
+episode 149: winner -1 in 20 moves, last 50: P1 0.60 / draw 0.02, avg length 16.2
+episode 150: winner +1 in 17 moves, last 50: P1 0.62 / draw 0.02, avg length 16.2
+--- eval vs random after episode 150: {'win': 13, 'draw': 4, 'loss': 3}
+episode 151: winner +1 in 17 moves, last 50: P1 0.64 / draw 0.02, avg length 16.2
+episode 152: winner +1 in 17 moves, last 50: P1 0.66 / draw 0.02, avg length 16.4
+episode 153: winner +1 in 13 moves, last 50: P1 0.68 / draw 0.02, avg length 16.3
+episode 154: winner -1 in 22 moves, last 50: P1 0.66 / draw 0.02, avg length 16.4
+episode 155: winner +1 in 7 moves, last 50: P1 0.68 / draw 0.02, avg length 16.2
+episode 156: winner -1 in 18 moves, last 50: P1 0.68 / draw 0.02, avg length 16.2
+episode 157: winner +1 in 15 moves, last 50: P1 0.70 / draw 0.02, avg length 16.1
+episode 158: winner -1 in 16 moves, last 50: P1 0.68 / draw 0.02, avg length 16.2
+episode 159: winner +1 in 15 moves, last 50: P1 0.68 / draw 0.02, avg length 16.0
+episode 160: winner +0 in 60 moves, last 50: P1 0.68 / draw 0.04, avg length 16.9
+episode 161: winner +1 in 17 moves, last 50: P1 0.68 / draw 0.04, avg length 16.9
+episode 162: winner +1 in 17 moves, last 50: P1 0.70 / draw 0.04, avg length 16.9
+episode 163: winner -1 in 16 moves, last 50: P1 0.68 / draw 0.04, avg length 17.0
+episode 164: winner +1 in 11 moves, last 50: P1 0.70 / draw 0.04, avg length 16.9
+episode 165: winner +1 in 29 moves, last 50: P1 0.70 / draw 0.04, avg length 17.0
+episode 166: winner -1 in 32 moves, last 50: P1 0.68 / draw 0.04, avg length 17.4
+episode 167: winner -1 in 16 moves, last 50: P1 0.66 / draw 0.04, avg length 17.5
+episode 168: winner -1 in 12 moves, last 50: P1 0.64 / draw 0.04, avg length 17.5
+episode 169: winner -1 in 22 moves, last 50: P1 0.62 / draw 0.04, avg length 17.7
+episode 170: winner +1 in 13 moves, last 50: P1 0.62 / draw 0.04, avg length 17.8
+episode 171: winner +1 in 17 moves, last 50: P1 0.62 / draw 0.04, avg length 17.9
+episode 172: winner +1 in 9 moves, last 50: P1 0.62 / draw 0.04, avg length 17.8
+episode 173: winner +1 in 13 moves, last 50: P1 0.62 / draw 0.04, avg length 17.7
+episode 174: winner -1 in 12 moves, last 50: P1 0.60 / draw 0.04, avg length 17.6
+episode 175: winner +1 in 17 moves, last 50: P1 0.60 / draw 0.04, avg length 17.8
+episode 176: winner +1 in 15 moves, last 50: P1 0.62 / draw 0.04, avg length 17.8
+episode 177: winner +1 in 37 moves, last 50: P1 0.62 / draw 0.04, avg length 18.1
+episode 178: winner -1 in 10 moves, last 50: P1 0.62 / draw 0.04, avg length 18.0
+episode 179: winner -1 in 16 moves, last 50: P1 0.60 / draw 0.04, avg length 18.1
+episode 180: winner +0 in 60 moves, last 50: P1 0.58 / draw 0.06, avg length 19.0
+episode 181: winner -1 in 18 moves, last 50: P1 0.58 / draw 0.06, avg length 19.0
+episode 182: winner -1 in 18 moves, last 50: P1 0.56 / draw 0.06, avg length 19.2
+episode 183: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.06, avg length 19.3
+episode 184: winner -1 in 14 moves, last 50: P1 0.54 / draw 0.06, avg length 19.3
+episode 185: winner +1 in 25 moves, last 50: P1 0.56 / draw 0.06, avg length 19.6
+episode 186: winner +1 in 25 moves, last 50: P1 0.56 / draw 0.06, avg length 19.8
+episode 187: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.06, avg length 19.7
+episode 188: winner -1 in 16 moves, last 50: P1 0.56 / draw 0.06, avg length 19.7
+episode 189: winner -1 in 12 moves, last 50: P1 0.54 / draw 0.06, avg length 19.7
+episode 190: winner +1 in 7 moves, last 50: P1 0.54 / draw 0.06, avg length 19.6
+episode 191: winner +1 in 17 moves, last 50: P1 0.56 / draw 0.06, avg length 19.8
+episode 192: winner +1 in 25 moves, last 50: P1 0.58 / draw 0.04, avg length 19.1
+episode 193: winner +1 in 9 moves, last 50: P1 0.60 / draw 0.04, avg length 18.6
+episode 194: winner +1 in 17 moves, last 50: P1 0.60 / draw 0.04, avg length 18.6
+episode 195: winner -1 in 16 moves, last 50: P1 0.58 / draw 0.04, avg length 18.6
+episode 196: winner -1 in 58 moves, last 50: P1 0.58 / draw 0.04, avg length 19.6
+episode 197: winner +0 in 60 moves, last 50: P1 0.56 / draw 0.06, avg length 20.1
+episode 198: winner +1 in 13 moves, last 50: P1 0.56 / draw 0.06, avg length 20.2
+episode 199: winner -1 in 16 moves, last 50: P1 0.56 / draw 0.06, avg length 20.1
+episode 200: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.06, avg length 20.0
+--- eval vs random after episode 200: {'win': 20, 'draw': 0, 'loss': 0}
+episode 201: winner +1 in 21 moves, last 50: P1 0.56 / draw 0.06, avg length 20.1
+episode 202: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.06, avg length 20.1
+episode 203: winner +0 in 60 moves, last 50: P1 0.54 / draw 0.08, avg length 21.0
+episode 204: winner -1 in 18 moves, last 50: P1 0.54 / draw 0.08, avg length 20.9
+episode 205: winner -1 in 18 moves, last 50: P1 0.52 / draw 0.08, avg length 21.2
+episode 206: winner +1 in 15 moves, last 50: P1 0.54 / draw 0.08, avg length 21.1
+episode 207: winner +1 in 15 moves, last 50: P1 0.54 / draw 0.08, avg length 21.1
+episode 208: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.08, avg length 21.1
+episode 209: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.08, avg length 21.1
+episode 210: winner +1 in 15 moves, last 50: P1 0.56 / draw 0.06, avg length 20.2
+episode 211: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.06, avg length 20.2
+episode 212: winner -1 in 16 moves, last 50: P1 0.52 / draw 0.06, avg length 20.2
+episode 213: winner +1 in 59 moves, last 50: P1 0.54 / draw 0.06, avg length 21.0
+episode 214: winner -1 in 14 moves, last 50: P1 0.52 / draw 0.06, avg length 21.1
+episode 215: winner +1 in 13 moves, last 50: P1 0.52 / draw 0.06, avg length 20.8
+episode 216: winner +1 in 17 moves, last 50: P1 0.54 / draw 0.06, avg length 20.5
+episode 217: winner +1 in 17 moves, last 50: P1 0.56 / draw 0.06, avg length 20.5
+episode 218: winner +1 in 25 moves, last 50: P1 0.58 / draw 0.06, avg length 20.7
+episode 219: winner +1 in 21 moves, last 50: P1 0.60 / draw 0.06, avg length 20.7
+episode 220: winner -1 in 30 moves, last 50: P1 0.58 / draw 0.06, avg length 21.1
+episode 221: winner +1 in 15 moves, last 50: P1 0.58 / draw 0.06, avg length 21.0
+episode 222: winner +1 in 17 moves, last 50: P1 0.58 / draw 0.06, avg length 21.2
+episode 223: winner -1 in 8 moves, last 50: P1 0.56 / draw 0.06, avg length 21.1
+episode 224: winner +1 in 17 moves, last 50: P1 0.58 / draw 0.06, avg length 21.2
+episode 225: winner -1 in 18 moves, last 50: P1 0.56 / draw 0.06, avg length 21.2
+episode 226: winner +1 in 17 moves, last 50: P1 0.56 / draw 0.06, avg length 21.2
+episode 227: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.06, avg length 20.8
+episode 228: winner -1 in 26 moves, last 50: P1 0.54 / draw 0.06, avg length 21.1
+episode 229: winner +1 in 13 moves, last 50: P1 0.56 / draw 0.06, avg length 21.1
+episode 230: winner -1 in 16 moves, last 50: P1 0.56 / draw 0.04, avg length 20.2
+episode 231: winner -1 in 14 moves, last 50: P1 0.56 / draw 0.04, avg length 20.1
+episode 232: winner -1 in 18 moves, last 50: P1 0.56 / draw 0.04, avg length 20.1
+episode 233: winner -1 in 16 moves, last 50: P1 0.54 / draw 0.04, avg length 20.1
+episode 234: winner -1 in 8 moves, last 50: P1 0.54 / draw 0.04, avg length 20.0
+episode 235: winner -1 in 18 moves, last 50: P1 0.52 / draw 0.04, avg length 19.9
+episode 236: winner -1 in 20 moves, last 50: P1 0.50 / draw 0.04, avg length 19.8
+episode 237: winner -1 in 14 moves, last 50: P1 0.48 / draw 0.04, avg length 19.8
+episode 238: winner -1 in 30 moves, last 50: P1 0.48 / draw 0.04, avg length 20.0
+episode 239: winner -1 in 22 moves, last 50: P1 0.48 / draw 0.04, avg length 20.2
+episode 240: winner -1 in 16 moves, last 50: P1 0.46 / draw 0.04, avg length 20.4
+episode 241: winner -1 in 26 moves, last 50: P1 0.44 / draw 0.04, avg length 20.6
+episode 242: winner -1 in 16 moves, last 50: P1 0.42 / draw 0.04, avg length 20.4
+episode 243: winner +0 in 60 moves, last 50: P1 0.40 / draw 0.06, avg length 21.4
+episode 244: winner -1 in 56 moves, last 50: P1 0.38 / draw 0.06, avg length 22.2
+episode 245: winner -1 in 16 moves, last 50: P1 0.38 / draw 0.06, avg length 22.2
+episode 246: winner +1 in 15 moves, last 50: P1 0.40 / draw 0.06, avg length 21.4
+episode 247: winner -1 in 10 moves, last 50: P1 0.40 / draw 0.04, avg length 20.4
+episode 248: winner -1 in 18 moves, last 50: P1 0.38 / draw 0.04, avg length 20.5
+episode 249: winner +1 in 33 moves, last 50: P1 0.40 / draw 0.04, avg length 20.8
+episode 250: winner +0 in 60 moves, last 50: P1 0.38 / draw 0.06, avg length 21.7
+--- eval vs random after episode 250: {'win': 17, 'draw': 3, 'loss': 0}
+episode 251: winner -1 in 22 moves, last 50: P1 0.36 / draw 0.06, avg length 21.7
+episode 252: winner +1 in 17 moves, last 50: P1 0.36 / draw 0.06, avg length 21.8
+episode 253: winner +1 in 51 moves, last 50: P1 0.38 / draw 0.04, avg length 21.6
+episode 254: winner -1 in 18 moves, last 50: P1 0.38 / draw 0.04, avg length 21.6
+episode 255: winner -1 in 14 moves, last 50: P1 0.38 / draw 0.04, avg length 21.5
+episode 256: winner +0 in 60 moves, last 50: P1 0.36 / draw 0.06, avg length 22.4
+episode 257: winner +1 in 25 moves, last 50: P1 0.36 / draw 0.06, avg length 22.6
+episode 258: winner +1 in 13 moves, last 50: P1 0.36 / draw 0.06, avg length 22.6
+episode 259: winner -1 in 12 moves, last 50: P1 0.36 / draw 0.06, avg length 22.5
+episode 260: winner -1 in 20 moves, last 50: P1 0.34 / draw 0.06, avg length 22.6
+episode 261: winner -1 in 14 moves, last 50: P1 0.34 / draw 0.06, avg length 22.5
+episode 262: winner +1 in 21 moves, last 50: P1 0.36 / draw 0.06, avg length 22.6
+episode 263: winner +0 in 60 moves, last 50: P1 0.34 / draw 0.08, avg length 22.7
+episode 264: winner +1 in 17 moves, last 50: P1 0.36 / draw 0.08, avg length 22.7
+episode 265: winner -1 in 16 moves, last 50: P1 0.34 / draw 0.08, avg length 22.8
+episode 266: winner -1 in 18 moves, last 50: P1 0.32 / draw 0.08, avg length 22.8
+episode 267: winner -1 in 40 moves, last 50: P1 0.30 / draw 0.08, avg length 23.3
+episode 268: winner +1 in 21 moves, last 50: P1 0.30 / draw 0.08, avg length 23.2
+episode 269: winner +1 in 17 moves, last 50: P1 0.30 / draw 0.08, avg length 23.1
+episode 270: winner -1 in 18 moves, last 50: P1 0.30 / draw 0.08, avg length 22.9
+episode 271: winner -1 in 18 moves, last 50: P1 0.28 / draw 0.08, avg length 22.9
+episode 272: winner -1 in 20 moves, last 50: P1 0.26 / draw 0.08, avg length 23.0
+episode 273: winner +1 in 23 moves, last 50: P1 0.28 / draw 0.08, avg length 23.3
+episode 274: winner -1 in 16 moves, last 50: P1 0.26 / draw 0.08, avg length 23.3
+episode 275: winner -1 in 10 moves, last 50: P1 0.26 / draw 0.08, avg length 23.1
+episode 276: winner -1 in 20 moves, last 50: P1 0.24 / draw 0.08, avg length 23.2
+episode 277: winner -1 in 12 moves, last 50: P1 0.24 / draw 0.08, avg length 23.1
+episode 278: winner -1 in 8 moves, last 50: P1 0.24 / draw 0.08, avg length 22.7
+episode 279: winner -1 in 26 moves, last 50: P1 0.22 / draw 0.08, avg length 23.0
+episode 280: winner +1 in 17 moves, last 50: P1 0.24 / draw 0.08, avg length 23.0
+episode 281: winner -1 in 20 moves, last 50: P1 0.24 / draw 0.08, avg length 23.1
+episode 282: winner +1 in 23 moves, last 50: P1 0.26 / draw 0.08, avg length 23.2
+episode 283: winner -1 in 16 moves, last 50: P1 0.26 / draw 0.08, avg length 23.2
+episode 284: winner +0 in 60 moves, last 50: P1 0.26 / draw 0.10, avg length 24.3
+episode 285: winner -1 in 14 moves, last 50: P1 0.26 / draw 0.10, avg length 24.2
+episode 286: winner -1 in 16 moves, last 50: P1 0.26 / draw 0.10, avg length 24.1
+episode 287: winner -1 in 6 moves, last 50: P1 0.26 / draw 0.10, avg length 23.9
+episode 288: winner -1 in 12 moves, last 50: P1 0.26 / draw 0.10, avg length 23.6
+episode 289: winner -1 in 8 moves, last 50: P1 0.26 / draw 0.10, avg length 23.3
+episode 290: winner -1 in 8 moves, last 50: P1 0.26 / draw 0.10, avg length 23.1
+episode 291: winner -1 in 14 moves, last 50: P1 0.26 / draw 0.10, avg length 22.9
+episode 292: winner +1 in 15 moves, last 50: P1 0.28 / draw 0.10, avg length 22.9
+episode 293: winner -1 in 26 moves, last 50: P1 0.28 / draw 0.08, avg length 22.2
+episode 294: winner +1 in 49 moves, last 50: P1 0.30 / draw 0.08, avg length 22.1
+episode 295: winner +1 in 13 moves, last 50: P1 0.32 / draw 0.08, avg length 22.0
+episode 296: winner -1 in 12 moves, last 50: P1 0.30 / draw 0.08, avg length 21.9
+episode 297: winner +0 in 60 moves, last 50: P1 0.30 / draw 0.10, avg length 22.9
+episode 298: winner -1 in 16 moves, last 50: P1 0.30 / draw 0.10, avg length 22.9
+episode 299: winner +1 in 41 moves, last 50: P1 0.30 / draw 0.10, avg length 23.1
+episode 300: winner +1 in 25 moves, last 50: P1 0.32 / draw 0.08, avg length 22.4
+--- eval vs random after episode 300: {'win': 19, 'draw': 0, 'loss': 1}
+
+eval-vs-random history:
+  episode 50: {'win': 15, 'draw': 3, 'loss': 2}
+  episode 100: {'win': 14, 'draw': 3, 'loss': 3}
+  episode 150: {'win': 13, 'draw': 4, 'loss': 3}
+  episode 200: {'win': 20, 'draw': 0, 'loss': 0}
+  episode 250: {'win': 17, 'draw': 3, 'loss': 0}
+  episode 300: {'win': 19, 'draw': 0, 'loss': 1}
