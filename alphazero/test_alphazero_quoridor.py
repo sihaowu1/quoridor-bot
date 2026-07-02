@@ -32,14 +32,10 @@ SIMULATIONS = 400
 
 
 def _make_position(p1, p2, to_play=1, hw=(), vw=(), walls=(3, 3)):
+    # set_state exists with the same signature on both env backends, so
+    # these tests run unchanged under AZ_BACKEND=py and AZ_BACKEND=cpp.
     game = make_game()
-    game.pos = {1: tuple(p1), -1: tuple(p2)}
-    game.to_play = to_play
-    game.h_walls = set(hw)
-    game.v_walls = set(vw)
-    game.walls_left = {1: walls[0], -1: walls[1]}
-    game._legal_cache = None
-    game._legal_set = None
+    game.set_state(p1, p2, to_play, hw, vw, walls[0], walls[1])
     return game
 
 

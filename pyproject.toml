@@ -13,3 +13,9 @@ dependencies = [
     "tensorflow>=2.21.0",
     "torch>=2.12.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pybind11>=3.0.4",
+    "ziglang>=0.16.0",
+]

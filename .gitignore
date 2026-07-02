@@ -9,3 +9,7 @@
 
 # C++ compilation
 /simulation/*.exe
+/quoridor/*.exe
+/quoridor/quoridor
+*.so
+*.pyd

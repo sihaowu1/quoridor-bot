@@ -28,7 +28,28 @@ if GAME in ('ttt', 'tictactoe', 'tic_tac_toe'):
         return TicTacToe()
 
 else:
-    from alphazero.quoridor import Quoridor, num_actions, obs_size
+    from alphazero.quoridor import num_actions, obs_size
+
+    # Engine backend: the pybind11-wrapped C++ engine (built with
+    # `uv run python quoridor/build_ext.py`) is a drop-in, lockstep-verified
+    # replacement for the pure-Python env (see test_cpp_backend.py).
+    # AZ_BACKEND=cpp requires it, AZ_BACKEND=py forces the reference
+    # implementation, the default (auto) uses C++ when the extension exists.
+    BACKEND = os.environ.get('AZ_BACKEND', 'auto').lower()
+    if BACKEND not in ('auto', 'cpp', 'py'):
+        raise ValueError(f'AZ_BACKEND must be auto, cpp or py, got {BACKEND!r}')
+
+    Quoridor = None
+    if BACKEND in ('auto', 'cpp'):
+        try:
+            from alphazero.quoridor_cpp import QuoridorCpp as Quoridor
+        except ImportError:
+            if BACKEND == 'cpp':
+                raise ImportError(
+                    'AZ_BACKEND=cpp but the compiled engine is missing; '
+                    'build it with: uv run python quoridor/build_ext.py')
+    if Quoridor is None:
+        from alphazero.quoridor import Quoridor
 
     GAME_NAME = 'Quoridor'
 

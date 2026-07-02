@@ -10,15 +10,18 @@
 │   ├── nn.py                    # policy / value MLPs
 │   ├── run.py                   # self-play training driver (auto-resumes)
 │   ├── checkpoint.py            # crash-safe save/restore of training state
-│   ├── quoridor.py              # Quoridor environment + self-tests
+│   ├── quoridor.py              # Quoridor environment (pure-Python reference) + self-tests
+│   ├── quoridor_cpp.py          # drop-in env wrapper around the C++ engine
 │   ├── tic_tac_toe.py           # validation game + self-tests
 │   ├── test_alphazero_quoridor.py
 │   ├── test_alphazero_ttt.py
+│   ├── test_cpp_backend.py      # lockstep C++-vs-Python cross-validation
 │   └── replay_buffer.py
-├── quoridor/                    # standalone C++ CLI (human vs human), not exposed to Python
-│   ├── quoridor.cpp
-│   ├── quoridor.h
-│   └── main.cpp
+├── quoridor/                    # C++ engine
+│   ├── quoridor.cpp / .h        # the engine (mirrors alphazero/quoridor.py exactly)
+│   ├── bindings.cpp             # pybind11 module (alphazero.quoridor_engine)
+│   ├── build_ext.py             # builds the extension with the bundled zig toolchain
+│   └── main.cpp                 # standalone human-vs-human CLI
 ├── README.md
 ├── .python-version
 ├── pyproject.toml
@@ -33,6 +36,32 @@ Python 3.13 with [uv](https://docs.astral.sh/uv/):
 ```bash
 uv sync
 ```
+
+## C++ engine backend
+
+The Quoridor environment exists twice with identical semantics: the
+pure-Python reference (`alphazero/quoridor.py`) and a C++ port
+(`quoridor/quoridor.cpp`) exposed to Python via pybind11. Training uses the
+C++ engine automatically once it is built; everything else is unchanged.
+
+```bash
+# build the extension module (alphazero/quoridor_engine.*.so); needs no
+# system compiler — the ziglang dev dependency ships a clang toolchain
+uv run python quoridor/build_ext.py
+
+# cross-validate the two backends in lockstep (obs, rewards, legal actions,
+# rendering, exceptions must be bit-identical at every ply of hundreds of
+# random and rule-targeted games); --bench prints a speed comparison
+uv run python -m alphazero.test_cpp_backend --bench
+```
+
+| env variable | default | meaning                                              |
+|--------------|---------|------------------------------------------------------|
+| `AZ_BACKEND` | `auto`  | `auto` (C++ if built), `cpp` (require), `py` (force) |
+
+The two engines must be changed together — the lockstep suite is the
+contract. `quoridor/main.cpp` additionally builds into a standalone
+human-vs-human CLI on the same engine.
 
 ## Running
 

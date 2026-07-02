@@ -209,6 +209,38 @@ class Quoridor:
             self._legal_set = frozenset(acts)
         return self._legal_cache
 
+    def set_state(self, p1, p2, to_play, h_walls, v_walls,
+                  walls_p1, walls_p2):
+        """Install an arbitrary position (testing / analysis).
+
+        Same signature and validation as the C++ engine's set_state, so
+        backend-agnostic code can position either implementation.
+        """
+        n, m = self.n, self.n - 1
+        p1, p2 = tuple(p1), tuple(p2)
+        for r, c in (p1, p2):
+            if not (0 <= r < n and 0 <= c < n):
+                raise ValueError('invalid pawn positions')
+        if p1 == p2:
+            raise ValueError('invalid pawn positions')
+        if to_play not in (1, -1):
+            raise ValueError('to_play must be +1 or -1')
+        h_walls = {tuple(w) for w in h_walls}
+        v_walls = {tuple(w) for w in v_walls}
+        for r, c in h_walls | v_walls:
+            if not (0 <= r < m and 0 <= c < m):
+                raise ValueError('wall slot out of range')
+        self.pos = {1: p1, -1: p2}
+        self.to_play = to_play
+        self.h_walls = h_walls
+        self.v_walls = v_walls
+        self.walls_left = {1: walls_p1, -1: walls_p2}
+        self.done = False
+        self.winner = None
+        self.move_count = 0
+        self._legal_cache = None
+        self._legal_set = None
+
     def clone(self):
         """Cheap copy for tree search (also backs __deepcopy__)."""
         c = Quoridor.__new__(Quoridor)
@@ -433,13 +465,7 @@ class Quoridor:
 def _make(p1, p2, to_play=1, hw=(), vw=(), walls=(3, 3), n=5, max_moves=None):
     """Build an arbitrary (assumed reachable) position for testing."""
     g = Quoridor(n, 3, max_moves)
-    g.pos = {1: tuple(p1), -1: tuple(p2)}
-    g.to_play = to_play
-    g.h_walls = set(hw)
-    g.v_walls = set(vw)
-    g.walls_left = {1: walls[0], -1: walls[1]}
-    g._legal_cache = None
-    g._legal_set = None
+    g.set_state(p1, p2, to_play, hw, vw, walls[0], walls[1])
     return g
 
 
