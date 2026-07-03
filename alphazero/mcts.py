@@ -49,7 +49,7 @@ DIRICHLET_ALPHA_SCALE = 10.0  # alpha = scale / num_legal_actions
 # Self-play games run in lock-step so their leaf evaluations share one
 # batched network call (32-128 is a reasonable range; override with the
 # AZ_PARALLEL_GAMES environment variable).
-PARALLEL_GAMES = int(os.environ.get('AZ_PARALLEL_GAMES', '64'))
+PARALLEL_GAMES = int(os.environ.get('AZ_PARALLEL_GAMES', '256'))
 
 
 class Node:

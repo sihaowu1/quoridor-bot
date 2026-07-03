@@ -59,9 +59,14 @@ else:
     # compute; see README).
     BOARD_SIZE = 9
     WALLS = 10
+    # Truncation cap (draw) on self-play games.  Tighter than the engine
+    # default of 800: near-cap games are almost pure noise for the replay
+    # buffer, and in lock-step self-play one long game gates the whole
+    # parallel batch.
+    MAX_MOVES = 500
 
     GAME_ACTIONS = num_actions(BOARD_SIZE)
     GAME_OBS = obs_size(BOARD_SIZE)
 
     def make_game():
-        return Quoridor(BOARD_SIZE, WALLS)
+        return Quoridor(BOARD_SIZE, WALLS, max_moves=MAX_MOVES)

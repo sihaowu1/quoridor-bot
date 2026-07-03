@@ -40,6 +40,7 @@ Run:  python -m alphazero.run
 from copy import deepcopy
 import os
 import random
+import time
 
 import numpy as np
 import matplotlib
@@ -58,7 +59,7 @@ from alphazero.mcts import (Node, Policy_Player_MCTS,
                             policy_v, policy_p)
 
 
-BUFFER_SIZE = 10000
+BUFFER_SIZE = 50000
 BATCH_SIZE = 128
 TRAIN_BATCHES_PER_EPISODE = 2
 
@@ -68,6 +69,11 @@ EVAL_EVERY = 50      # evaluate against a random player every N episodes
 EVAL_GAMES = 20
 
 METRIC_WINDOW = 50   # trailing window for the progress metrics
+
+# In-batch progress heartbeat: nothing else prints until every game in a
+# parallel self-play batch finishes, which can take hours (longest game x
+# 800 simulations per move), so log every N plies that the batch is alive.
+LOG_EVERY_PLIES = 10
 
 CHECKPOINT_DIR = os.environ.get('AZ_CHECKPOINT_DIR', 'checkpoints')
 CHECKPOINT_EVERY = int(os.environ.get('AZ_CHECKPOINT_EVERY', '1'))
@@ -112,8 +118,11 @@ def self_play_episodes(replay_buffer, n_games=PARALLEL_GAMES):
     """
     games = [_SelfPlayGame() for _ in range(n_games)]
 
+    start = time.time()
+    ply = 0
     active = list(games)
     while active:
+        ply += 1
         for g in active:
             g.players.append(g.game.to_play)
 
@@ -134,6 +143,12 @@ def self_play_episodes(replay_buffer, n_games=PARALLEL_GAMES):
                 g.done = True
 
         active = [g for g in active if not g.done]
+
+        if ply % LOG_EVERY_PLIES == 0 and active:
+            elapsed = time.time() - start
+            print(f'  self-play: ply {ply}, {len(active)}/{n_games} games '
+                  f'running, {elapsed:.0f}s elapsed '
+                  f'({elapsed / ply:.1f}s/ply)', flush=True)
 
     for g in games:
         for ob, p, player in zip(g.observations, g.policies, g.players):
