@@ -50,6 +50,18 @@ Then, run all.
 
 Note: Colab is preinstalled with all necessary libraries, so don't ```uv sync```.
 
+#### About the training
+
+If you don't have a performant GPU, the best way to train the bot is to first run it on a simpler board so it learns the game and doesn't have a cold-start. 
+To do this, follow these steps:
+
+1. In alphazero/game_config.py, change BOARD_SIZE to 9, WALLS to 2, and MAX_MOVES to 150. Then run the notebook. 
+2. Validate that this was successful by viewing the outputted graphs. 
+3. Change WALLS back to 10 for a conventional setting of Quoridor and MAX_MOVES to 250. 
+4. In your Google Drive, move Quoridor_train_state.pkl to a different location (or delete it). 
+5. Re-run the notebook. 
+
+
 ## Local Development
 
 Python 3.13 with [uv](https://docs.astral.sh/uv/):

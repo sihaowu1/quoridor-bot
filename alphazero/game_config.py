@@ -58,12 +58,12 @@ else:
     # BOARD_SIZE = 9, WALLS = 10 (expect training to need far more
     # compute; see README).
     BOARD_SIZE = 9
-    WALLS = 10
+    WALLS = 3
     # Truncation cap (draw) on self-play games.  Tighter than the engine
     # default of 800: near-cap games are almost pure noise for the replay
     # buffer, and in lock-step self-play one long game gates the whole
     # parallel batch.
-    MAX_MOVES = 500
+    MAX_MOVES = 250
 
     GAME_ACTIONS = num_actions(BOARD_SIZE)
     GAME_OBS = obs_size(BOARD_SIZE)

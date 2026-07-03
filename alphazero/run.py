@@ -54,8 +54,7 @@ from alphazero.checkpoint import (save_checkpoint, load_checkpoint,
                                   restore_rng)
 # Import the SAME network instances the MCTS uses, so training the networks
 # actually improves self-play.
-from alphazero.mcts import (Node, Policy_Player_MCTS,
-                            Policy_Player_MCTS_batch, PARALLEL_GAMES,
+from alphazero.mcts import (Node, Policy_Player_MCTS_batch, PARALLEL_GAMES,
                             policy_v, policy_p)
 
 
@@ -181,30 +180,58 @@ def train_networks(replay_buffer):
     return float(np.ravel(loss_v)[0]), float(np.ravel(loss_p)[0])
 
 
+class _EvalGame:
+    """State of one in-flight bot-vs-random game (see evaluate_vs_random)."""
+
+    def __init__(self, bot):
+        self.bot = bot          # side the MCTS bot plays (+1 / -1)
+        self.game = make_game()
+        self.observation, info = self.game.reset()
+        self.winner = None      # +1 / -1 / 0 once the game ends
+        self.done = False
+
+    def step(self, action):
+        self.observation, _, terminated, truncated, info = \
+            self.game.step(action)
+        if terminated or truncated:
+            self.winner = info['winner']
+            self.done = True
+
+
 def evaluate_vs_random(games=EVAL_GAMES):
     """
     Play greedy (most-visited-move) MCTS against a uniform-random player,
     alternating who goes first.  Returns counts from the bot's perspective.
+
+    The games run in lock-step, like self-play: each round first advances
+    every game where the random player is to move (no network involved), so
+    all still-running games have the bot to move, then searches them with a
+    single Policy_Player_MCTS_batch call that batches the leaf evaluations.
+    Each bot move searches a fresh tree — the opponent's random move
+    invalidates the previous search tree, exactly as in the old
+    one-game-at-a-time loop.
     """
+    envs = [_EvalGame(bot=1 if g % 2 == 0 else -1) for g in range(games)]
+
+    active = list(envs)
+    while active:
+        for g in active:
+            if g.game.to_play != g.bot:
+                g.step(random.choice(g.game.legal_actions()))
+        active = [g for g in active if not g.done]
+        if not active:
+            break
+
+        trees = [Node(deepcopy(g.game), False, None, g.observation, None)
+                 for g in active]
+        for g, (_, action, _, _, _) in zip(
+                active, Policy_Player_MCTS_batch(trees, greedy=True)):
+            g.step(action)
+        active = [g for g in active if not g.done]
+
     results = {'win': 0, 'draw': 0, 'loss': 0}
-
-    for g in range(games):
-        bot = 1 if g % 2 == 0 else -1
-        game = make_game()
-        observation, info = game.reset()
-
-        done = False
-        while not done:
-            if game.to_play == bot:
-                tree = Node(deepcopy(game), False, None, observation, None)
-                _, action, _, _, _ = Policy_Player_MCTS(tree, greedy=True)
-            else:
-                action = random.choice(game.legal_actions())
-
-            observation, _, terminated, truncated, info = game.step(action)
-            done = terminated or truncated
-
-        z = info['winner'] * bot
+    for g in envs:
+        z = g.winner * g.bot
         results['win' if z > 0 else 'loss' if z < 0 else 'draw'] += 1
 
     return results
