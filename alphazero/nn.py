@@ -27,7 +27,10 @@ class _DensePolicyV(keras.Model):
 
     def __init__(self):
 
-        super(_DensePolicyV, self).__init__()
+        # Explicit name: the auto-generated one ('_dense_policy_v') starts
+        # with '_', which is not a valid TF root name scope, so any
+        # graph-mode call (tf.function tracing) would fail.
+        super(_DensePolicyV, self).__init__(name='policy_v')
 
         self.dense1 = keras.layers.Dense(HIDDEN_STATES,
                                          activation='relu',
@@ -62,7 +65,8 @@ class _DensePolicyP(keras.Model):
 
     def __init__(self):
 
-        super(_DensePolicyP, self).__init__()
+        # Explicit name: see _DensePolicyV.__init__.
+        super(_DensePolicyP, self).__init__(name='policy_p')
 
         self.dense1 = keras.layers.Dense(HIDDEN_STATES,
                                          activation='relu',
@@ -151,7 +155,8 @@ if GAME_NAME == 'Quoridor':
         """Value network: conv trunk over the planes, 1x1 head, tanh."""
 
         def __init__(self):
-            super(_ConvPolicyV, self).__init__()
+            # Explicit name: see _DensePolicyV.__init__.
+            super(_ConvPolicyV, self).__init__(name='policy_v')
             self.convs = _trunk()
             self.head = keras.layers.Conv2D(2, 1,
                                             activation='relu',
@@ -183,7 +188,8 @@ if GAME_NAME == 'Quoridor':
         over the full flat action space (pawn moves + wall slots)."""
 
         def __init__(self):
-            super(_ConvPolicyP, self).__init__()
+            # Explicit name: see _DensePolicyV.__init__.
+            super(_ConvPolicyP, self).__init__(name='policy_p')
             self.convs = _trunk()
             self.head = keras.layers.Conv2D(4, 1,
                                             activation='relu',
