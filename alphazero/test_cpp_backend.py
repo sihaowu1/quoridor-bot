@@ -106,7 +106,7 @@ def _test_constructor_invariants():
         py, cpp = Quoridor(n, walls), QuoridorCpp(n, walls)
         assert cpp.n == py.n == n
         assert cpp.max_walls == py.max_walls == walls
-        assert cpp.max_moves == py.max_moves == 12 * n * n // 5
+        assert cpp.max_moves == py.max_moves == 800
         assert cpp.num_actions == py.num_actions
         assert cpp.obs_dim == py.obs_dim
         _assert_same_view(py, cpp, f'initial n={n}')
