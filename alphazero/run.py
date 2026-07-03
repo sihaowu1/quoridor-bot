@@ -2,7 +2,10 @@
 AlphaZero training driver (two-player self-play), crash-safe.
 
 Each episode plays one full game of self-play in which BOTH sides are moved
-by the same MCTS + networks.  Every visited position is stored with:
+by the same MCTS + networks.  Episodes run PARALLEL_GAMES at a time in
+lock-step so that the MCTS leaf evaluations of all in-flight games are
+batched into single network calls (the GPU-efficiency win; see mcts.py).
+Every visited position is stored with:
   * the canonical observation (perspective of the player to move),
   * the MCTS visit-count policy as the policy target,
   * the final game outcome z in {+1, 0, -1} FROM THAT PLAYER'S PERSPECTIVE
@@ -27,6 +30,9 @@ Environment variables:
   AZ_CHECKPOINT_EVERY  save frequency in episodes (default: 1)
   AZ_EPISODES          total episodes for the run (default: 300)
   AZ_GAME              game selection, see game_config.py
+  AZ_PARALLEL_GAMES    self-play games run in lock-step per batch so their
+                       MCTS leaf evaluations share one batched network call
+                       (default: 64, see mcts.PARALLEL_GAMES)
 
 Run:  python -m alphazero.run
 """
@@ -47,12 +53,14 @@ from alphazero.checkpoint import (save_checkpoint, load_checkpoint,
                                   restore_rng)
 # Import the SAME network instances the MCTS uses, so training the networks
 # actually improves self-play.
-from alphazero.mcts import Node, Policy_Player_MCTS, policy_v, policy_p
+from alphazero.mcts import (Node, Policy_Player_MCTS,
+                            Policy_Player_MCTS_batch, PARALLEL_GAMES,
+                            policy_v, policy_p)
 
 
 BUFFER_SIZE = 10000
 BATCH_SIZE = 128
-TRAIN_BATCHES_PER_EPISODE = 2  
+TRAIN_BATCHES_PER_EPISODE = 2
 
 EPISODES = int(os.environ.get('AZ_EPISODES', '300'))
 TEMP_MOVES = 24      # plies sampled by visit count before turning greedy
@@ -74,45 +82,72 @@ CHECKPOINT_META = {
 }
 
 
-def self_play_episode(replay_buffer):
+class _SelfPlayGame:
+    """State of one in-flight self-play game (see self_play_episodes)."""
+
+    def __init__(self):
+        self.game = make_game()
+        observation, info = self.game.reset()
+        self.tree = Node(deepcopy(self.game), False, None, observation, None)
+
+        self.observations = []  # canonical obs of each position where MCTS ran
+        self.policies = []      # MCTS visit-count policy at that position
+        self.players = []       # player to move at that position (+1 / -1)
+        self.winner = None      # +1 / -1 / 0 once the game ends
+        self.done = False
+
+
+def self_play_episodes(replay_buffer, n_games=PARALLEL_GAMES):
     """
-    Play one self-play game and fill the replay buffer with
-    (obs, outcome-for-that-player, mcts-policy) triples.
-    Returns (winner, number of moves).
+    Play ``n_games`` self-play games in parallel and fill the replay buffer
+    with (obs, outcome-for-that-player, mcts-policy) triples.
+
+    The games advance in lock-step: every simulation round batches the leaf
+    evaluations of all still-running games into a single network call
+    (Policy_Player_MCTS_batch), which is what keeps the GPU busy.  Finished
+    games drop out of the batch; the last few moves therefore run at smaller
+    batch sizes.
+
+    Returns a list of (winner, number of moves), one entry per game.
     """
-    game = make_game()
-    observation, info = game.reset()
+    games = [_SelfPlayGame() for _ in range(n_games)]
 
-    mytree = Node(deepcopy(game), False, None, observation, None)
-
-    observations = []   # canonical obs of each position where MCTS ran
-    policies = []       # MCTS visit-count policy at that position
-    players = []        # player to move at that position (+1 / -1)
-
-    done = False
-    while not done:
-        players.append(game.to_play)
+    active = list(games)
+    while active:
+        for g in active:
+            g.players.append(g.game.to_play)
 
         # p    = MCTS visit-count policy at the current position
         # p_ob = canonical observation of the current position
-        greedy = len(players) > TEMP_MOVES
-        mytree, action, _, p, p_ob = Policy_Player_MCTS(
-            mytree, greedy=greedy, root_noise=True)
+        greedy = [len(g.players) > TEMP_MOVES for g in active]
+        results = Policy_Player_MCTS_batch([g.tree for g in active],
+                                           greedy=greedy, root_noise=True)
 
-        observations.append(p_ob)
-        policies.append(p)
+        for g, (tree, action, _, p, p_ob) in zip(active, results):
+            g.tree = tree
+            g.observations.append(p_ob)
+            g.policies.append(p)
 
-        _, _, terminated, truncated, info = game.step(action)
-        done = terminated or truncated
+            _, _, terminated, truncated, info = g.game.step(action)
+            if terminated or truncated:
+                g.winner = info['winner']
+                g.done = True
 
-    winner = info['winner']  # +1 / -1 / 0
+        active = [g for g in active if not g.done]
 
-    for ob, p, player in zip(observations, policies, players):
-        # Outcome from the perspective of the player to move at this
-        # position: +1 if they went on to win, -1 to lose, 0 draw.
-        replay_buffer.add(obs=ob, v=float(winner * player), p=p)
+    for g in games:
+        for ob, p, player in zip(g.observations, g.policies, g.players):
+            # Outcome from the perspective of the player to move at this
+            # position: +1 if they went on to win, -1 to lose, 0 draw.
+            replay_buffer.add(obs=ob, v=float(g.winner * player), p=p)
 
-    return winner, len(players)
+    return [(g.winner, len(g.players)) for g in games]
+
+
+def self_play_episode(replay_buffer):
+    """Single-game self-play episode (tests / debugging).
+    Returns (winner, number of moves)."""
+    return self_play_episodes(replay_buffer, n_games=1)[0]
 
 
 def train_networks(replay_buffer):
@@ -238,37 +273,52 @@ def train():
     outcomes = histories['outcomes']
     game_lengths = histories['game_lengths']
 
-    for e in range(start_episode, EPISODES):
-        winner, moves = self_play_episode(replay_buffer)
-        outcomes.append(winner)
-        game_lengths.append(moves)
+    e = start_episode
+    while e < EPISODES:
+        # One parallel batch of self-play games counts as that many episodes;
+        # per-episode metrics / training / eval / checkpointing below keep
+        # the exact cadence of the old one-game-at-a-time loop.
+        batch_results = self_play_episodes(
+            replay_buffer, n_games=min(PARALLEL_GAMES, EPISODES - e))
 
-        window = outcomes[-METRIC_WINDOW:]
-        histories['p1_win_rates'].append(window.count(1) / len(window))
-        histories['draw_rates'].append(window.count(0) / len(window))
+        for winner, moves in batch_results:
+            outcomes.append(winner)
+            game_lengths.append(moves)
 
-        print(f'episode {e + 1}: winner {winner:+d} in {moves} moves, '
-              f'last {len(window)}: '
-              f'P1 {histories["p1_win_rates"][-1]:.2f} / '
-              f'draw {histories["draw_rates"][-1]:.2f}, '
-              f'avg length {np.mean(game_lengths[-METRIC_WINDOW:]):.1f}',
-              flush=True)
+            window = outcomes[-METRIC_WINDOW:]
+            histories['p1_win_rates'].append(window.count(1) / len(window))
+            histories['draw_rates'].append(window.count(0) / len(window))
 
-        if len(replay_buffer) > BATCH_SIZE:
-            for _ in range(TRAIN_BATCHES_PER_EPISODE):
-                loss_v, loss_p = train_networks(replay_buffer)
-            histories['v_losses'].append(loss_v)
-            histories['p_losses'].append(loss_p)
-
-        if (e + 1) % EVAL_EVERY == 0:
-            results = evaluate_vs_random()
-            histories['eval_history'].append((e + 1, results))
-            print(f'--- eval vs random after episode {e + 1}: {results}',
+            print(f'episode {e + 1}: winner {winner:+d} in {moves} moves, '
+                  f'last {len(window)}: '
+                  f'P1 {histories["p1_win_rates"][-1]:.2f} / '
+                  f'draw {histories["draw_rates"][-1]:.2f}, '
+                  f'avg length {np.mean(game_lengths[-METRIC_WINDOW:]):.1f}',
                   flush=True)
-            _write_plots(histories)
 
-        if (e + 1) % CHECKPOINT_EVERY == 0 or e + 1 == EPISODES:
-            save_checkpoint(CHECKPOINT_DIR, CHECKPOINT_FILE, e + 1,
+            if len(replay_buffer) > BATCH_SIZE:
+                for _ in range(TRAIN_BATCHES_PER_EPISODE):
+                    loss_v, loss_p = train_networks(replay_buffer)
+                histories['v_losses'].append(loss_v)
+                histories['p_losses'].append(loss_p)
+
+            if (e + 1) % EVAL_EVERY == 0:
+                results = evaluate_vs_random()
+                histories['eval_history'].append((e + 1, results))
+                print(f'--- eval vs random after episode {e + 1}: {results}',
+                      flush=True)
+                _write_plots(histories)
+
+            e += 1
+
+        # Checkpoint at most once per parallel batch (episodes inside a
+        # batch finish together, so mid-batch checkpoints could not save
+        # any resume time): save whenever the batch crossed a
+        # CHECKPOINT_EVERY boundary, and always at the end of the run.
+        crossed = (e // CHECKPOINT_EVERY
+                   != (e - len(batch_results)) // CHECKPOINT_EVERY)
+        if crossed or e == EPISODES:
+            save_checkpoint(CHECKPOINT_DIR, CHECKPOINT_FILE, e,
                             policy_v, policy_p, replay_buffer,
                             histories, CHECKPOINT_META)
 
