@@ -113,3 +113,13 @@ AlphaZero trains via self-play. Each move, it does the following:
 * Check the next possible moves from the current board state. Choose the move with either a low visit count or that looks promising according to the two nns. 
 * Repeat until a game is done. 
 * There's an outcome, so update the nns and the MCTS accordingly. 
+
+### Visualizing the Board
+
+The AlphaZero algorithm doesn't see the board the same way we do. 
+It keeps track of the board as a flat 292-number vector (81 own-pall cells, 81 opponent-pawn cells, 64 horizontal-wall, etc.) 
+So, AlphaZero has to relearn the rules for every board location. 
+
+To make this more efficient, we arrange the board as a conv net, basically a stack of planes. 
+This way, the machine can understand that walls block movement with one set of weights, 
+instead of relearning it for every move. 
