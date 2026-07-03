@@ -16,10 +16,37 @@ game_config.py picks this backend automatically when the extension is
 available (override with AZ_BACKEND=py / AZ_BACKEND=cpp).
 """
 
+import os
+import warnings
+
 import numpy as np
 
 from alphazero import quoridor_engine as _engine
 from alphazero.quoridor import DEFAULT_BOARD_SIZE, DEFAULT_WALLS
+
+
+def _check_engine_fresh():
+    """Refuse a compiled engine older than the C++ sources.
+
+    A stale quoridor_engine.so silently reintroduces whatever the sources
+    have since fixed (training-impacting: e.g. an outdated max_moves
+    default truncating games early).  Raising ImportError makes
+    AZ_BACKEND=cpp fail loudly and AZ_BACKEND=auto fall back to the
+    (correct, slower) Python env after the warning below.
+    """
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sources = [os.path.join(root, 'quoridor', name)
+               for name in ('quoridor.cpp', 'quoridor.h', 'bindings.cpp')]
+    newest = max((os.path.getmtime(s) for s in sources if os.path.exists(s)),
+                 default=0.0)
+    if os.path.getmtime(_engine.__file__) < newest:
+        msg = ('compiled Quoridor engine is older than the C++ sources; '
+               'rebuild it with: uv run python quoridor/build_ext.py')
+        warnings.warn(msg)
+        raise ImportError(msg)
+
+
+_check_engine_fresh()
 
 
 class QuoridorCpp:

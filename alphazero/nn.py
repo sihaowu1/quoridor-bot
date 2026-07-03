@@ -31,9 +31,13 @@ class PolicyV(keras.Model):
                                          kernel_initializer=keras.initializers.he_normal(), 
                                          name='dense-2') 
         
-        self.v_out = keras.layers.Dense(1, 
-                                        kernel_initializer=keras.initializers.he_normal(), 
-                                        name='v_out') 
+        # tanh bounds the value to [-1, 1]: a game outcome can never beat a
+        # win (+1), so an unbounded head lets an untrained/noisy network
+        # score arbitrary moves above proven wins in the PUCT selection.
+        self.v_out = keras.layers.Dense(1,
+                                        activation='tanh',
+                                        kernel_initializer=keras.initializers.he_normal(),
+                                        name='v_out')
     
 
     def call(self, input): 

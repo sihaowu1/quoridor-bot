@@ -43,11 +43,12 @@ else:
     if BACKEND in ('auto', 'cpp'):
         try:
             from alphazero.quoridor_cpp import QuoridorCpp as Quoridor
-        except ImportError:
+        except ImportError as err:
             if BACKEND == 'cpp':
                 raise ImportError(
-                    'AZ_BACKEND=cpp but the compiled engine is missing; '
-                    'build it with: uv run python quoridor/build_ext.py')
+                    f'AZ_BACKEND=cpp but the compiled engine is unusable '
+                    f'({err}); build it with: '
+                    f'uv run python quoridor/build_ext.py') from err
     if Quoridor is None:
         from alphazero.quoridor import Quoridor
 

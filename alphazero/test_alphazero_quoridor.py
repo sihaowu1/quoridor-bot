@@ -108,10 +108,11 @@ def test_policy_target_shape():
 
 
 def test_self_play_episode_targets():
-    buffer = ReplayBuffer(buffer_size=500, batch_size=8)
-    winner, moves = self_play_episode(buffer)
-
+    # The buffer must hold the longest possible game (max_moves plies),
+    # otherwise the deque evicts early positions and len(buffer) != moves.
     game = make_game()
+    buffer = ReplayBuffer(buffer_size=game.max_moves, batch_size=8)
+    winner, moves = self_play_episode(buffer)
     assert winner in (1, -1, 0)
     assert 0 < moves <= game.max_moves
     assert len(buffer) == moves

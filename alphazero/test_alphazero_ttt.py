@@ -12,7 +12,6 @@ Run: AZ_GAME=ttt python -m alphazero.test_alphazero_ttt
 """
 
 from copy import deepcopy
-import random
 import sys
 
 import numpy as np
@@ -129,8 +128,13 @@ def test_self_play_episode_targets():
 
 
 if __name__ == '__main__':
-    random.seed(0)
-    np.random.seed(0)
+    from tensorflow import keras
+
+    # Seeds python/numpy AND TensorFlow, exactly like the Quoridor suite:
+    # the network weights were the one unseeded input, making the tactical
+    # assertions flaky (an unlucky untrained net can outrank a proven win
+    # within the simulation budget).  Fully seeded, the run is deterministic.
+    keras.utils.set_random_seed(0)
 
     tests = [
         test_finds_immediate_win,
