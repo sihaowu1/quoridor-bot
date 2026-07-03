@@ -50,12 +50,12 @@ from alphazero.checkpoint import (save_checkpoint, load_checkpoint,
 from alphazero.mcts import Node, Policy_Player_MCTS, policy_v, policy_p
 
 
-BUFFER_SIZE = 3000
+BUFFER_SIZE = 10000
 BATCH_SIZE = 128
-TRAIN_BATCHES_PER_EPISODE = 4  # Quoridor games yield ~10-60 positions each
+TRAIN_BATCHES_PER_EPISODE = 2  # Quoridor games yield ~10-60 positions each
 
 EPISODES = int(os.environ.get('AZ_EPISODES', '300'))
-TEMP_MOVES = 8       # plies sampled by visit count before turning greedy
+TEMP_MOVES = 24      # plies sampled by visit count before turning greedy
 EVAL_EVERY = 50      # evaluate against a random player every N episodes
 EVAL_GAMES = 20
 

@@ -30,8 +30,8 @@ policy_p.compile(optimizer=keras.optimizers.Adam(),
                  metrics=[tf.keras.metrics.CategoricalCrossentropy()])
 
 # tunable constants
-c_puct = 1.0            # exploration weight in the PUCT formula
-MCTS_POLICY_EXPLORE = 100  # number of simulations per move
+c_puct = 3.0          # exploration weight in the PUCT formula
+MCTS_POLICY_EXPLORE = 200  # number of simulations per move
 DIRICHLET_FRACTION = 0.25  # weight of the root exploration noise
 DIRICHLET_ALPHA_SCALE = 10.0  # alpha = scale / num_legal_actions
 
