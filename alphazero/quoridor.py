@@ -114,7 +114,7 @@ class Quoridor:
         self.max_walls = walls
         # Long enough that real games never hit it; random early self-play
         # games that wander are cut off as draws.
-        self.max_moves = max_moves or 12 * board_size * board_size // 5
+        self.max_moves = max_moves or 800
         self.num_actions = num_actions(board_size)
         self.obs_dim = obs_size(board_size)
         self.reset()

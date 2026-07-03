@@ -35,7 +35,7 @@ struct StepOutcome {
 
 class Engine {
 public:
-    explicit Engine(int board_size = 5, int walls = 3, int max_moves = 0);
+    explicit Engine(int board_size = 9, int walls = 10, int max_moves = 0);
 
     void reset();
     StepOutcome step(int action);

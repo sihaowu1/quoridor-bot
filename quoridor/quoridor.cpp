@@ -10,7 +10,7 @@ Engine::Engine(int board_size, int walls, int max_moves)
     : n_(board_size),
       max_walls_(walls),
       max_moves_(max_moves > 0 ? max_moves
-                               : 12 * board_size * board_size / 5),
+                               : 800),
       num_actions_(quoridor::num_actions(board_size)),
       obs_dim_(quoridor::obs_size(board_size)) {
     if (board_size < 3) {

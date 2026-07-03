@@ -52,7 +52,7 @@ from alphazero.mcts import Node, Policy_Player_MCTS, policy_v, policy_p
 
 BUFFER_SIZE = 10000
 BATCH_SIZE = 128
-TRAIN_BATCHES_PER_EPISODE = 2  # Quoridor games yield ~10-60 positions each
+TRAIN_BATCHES_PER_EPISODE = 2  
 
 EPISODES = int(os.environ.get('AZ_EPISODES', '300'))
 TEMP_MOVES = 24      # plies sampled by visit count before turning greedy
