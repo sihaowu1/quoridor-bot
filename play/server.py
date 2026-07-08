@@ -28,6 +28,12 @@ from play.agent import bot_move, load_networks
 
 HUMAN, BOT = 1, -1
 
+# The bot is only trained for 3 walls per player, so pin play to 3
+# regardless of game_config.WALLS (which may be raised for training a
+# full 10-wall game).  Pinning the game itself — not just the displayed
+# counter — keeps the legal wall moves at 3 too.
+PLAY_WALLS = 3
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -35,7 +41,9 @@ class Session:
     """One game plus the bits of per-move context the UI wants."""
 
     def __init__(self):
-        self.game = make_game()
+        template = make_game()  # carries the configured backend / board size
+        self.game = type(template)(template.n, PLAY_WALLS,
+                                   max_moves=template.max_moves)
         self.reset()
 
     def reset(self):
