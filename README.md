@@ -93,6 +93,30 @@ AZ_GAME=ttt python -m alphazero.test_alphazero_ttt
 AZ_GAME=ttt python -m alphazero.run
 ```
 
+## Play against the bot
+
+A minimal stdlib-only web UI (no extra dependencies): a local HTTP server
+loads the trained networks into the same MCTS the training uses, and a
+single HTML page renders the board.  You are the blue pawn at the bottom,
+moving first, aiming for the top row.
+
+```bash
+# with the training checkpoint downloaded from Drive
+AZ_CHECKPOINT=path/to/Quoridor_train_state.pkl python -m play.server
+
+# or with saved .weights.h5 files (defaults shown; must match the CURRENT
+# architecture and BOARD_SIZE in game_config.py)
+AZ_WEIGHTS_V=checkpoints/Quoridor_policy_v.weights.h5 \
+AZ_WEIGHTS_P=checkpoints/Quoridor_policy_p.weights.h5 \
+python -m play.server
+```
+
+Then open <http://localhost:8000>.  Click a highlighted cell to move; pick
+a wall mode and click a groove intersection to place a wall.  Knobs:
+`AZ_PLAY_SIMS` (MCTS simulations per bot move, default 200 — higher is
+stronger and slower), `AZ_PLAY_PORT` (default 8000), and the usual
+`AZ_BACKEND=py` if the compiled C++ engine is stale on your machine.
+
 ## AlphaZero Algorithm
 
 This section provides an explanation of the AlphaZero algorithm in simple terms. 

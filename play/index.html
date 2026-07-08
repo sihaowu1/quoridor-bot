@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quoridor vs Bot</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #f4f1ea;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  #controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button { padding: 6px 14px; font-size: 14px; cursor: pointer; }
+  button.active { background: #333; color: #fff; }
+  #status { font-size: 15px; min-height: 22px; }
+  #info { font-size: 13px; color: #666; min-height: 18px; }
+
+  #board {
+    display: grid;
+    background: #b98d5e;
+    padding: 10px;
+    border-radius: 8px;
+    user-select: none;
+  }
+  .cell {
+    background: #e7cfa7;
+    border-radius: 4px;
+    position: relative;
+  }
+  .cell.dest { cursor: pointer; }
+  .cell.dest::after {
+    content: '';
+    position: absolute;
+    inset: 35%;
+    border-radius: 50%;
+    background: rgba(40, 140, 60, 0.55);
+  }
+  .cell.dest:hover { background: #d8e7b8; }
+  .pawn {
+    position: absolute;
+    inset: 15%;
+    border-radius: 50%;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.35);
+  }
+  .pawn.human { background: #2b6cb0; }
+  .pawn.bot { background: #c0392b; }
+  .wall { background: #7b4a1e; border-radius: 3px; z-index: 2; }
+  .wall.ghost { background: rgba(123, 74, 30, 0.45); pointer-events: none; }
+  .slot {
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    cursor: pointer;
+    z-index: 3;
+  }
+  .slot:hover { background: rgba(255,255,255,0.9); }
+</style>
+</head>
+<body>
+  <div id="controls">
+    <button id="new">New game</button>
+    <button id="mode-move" class="active">Move pawn</button>
+    <button id="mode-H">Wall &#9473;</button>
+    <button id="mode-V">Wall &#9475;</button>
+  </div>
+  <div id="status">Loading&hellip;</div>
+  <div id="board"></div>
+  <div id="info"></div>
+
+<script>
+'use strict';
+
+const CELL = 56, GAP = 14;
+const board = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const infoEl = document.getElementById('info');
+
+let state = null;
+let mode = 'move';   // 'move' | 'H' | 'V'
+let busy = false;
+
+const modeButtons = {
+  move: document.getElementById('mode-move'),
+  H: document.getElementById('mode-H'),
+  V: document.getElementById('mode-V'),
+};
+for (const [m, btn] of Object.entries(modeButtons)) {
+  btn.onclick = () => { mode = m; render(); };
+}
+document.getElementById('new').onclick = () => post('/new');
+
+async function post(path, body) {
+  if (busy) return;
+  busy = true;
+  if (path === '/move') {
+    statusEl.textContent = 'Bot is thinking…';
+    render();  // strip click targets while waiting
+  }
+  try {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body || {}),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    state = data;
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    busy = false;
+    return;
+  }
+  busy = false;
+  render();
+}
+
+// Grid geometry: cell (r, c) sits at CSS track (2r+1, 2c+1); the grooves
+// between cells are the even tracks. A wall at slot (r, c) spans three
+// tracks starting at the groove after row/column r.
+function place(el, row, col, rowSpan, colSpan) {
+  el.style.gridRow = row + (rowSpan ? ' / ' + (row + rowSpan) : '');
+  el.style.gridColumn = col + (colSpan ? ' / ' + (col + colSpan) : '');
+  board.appendChild(el);
+  return el;
+}
+
+function div(cls) {
+  const el = document.createElement('div');
+  el.className = cls;
+  return el;
+}
+
+function wallEl(o, r, c, cls) {
+  const el = div(cls);
+  if (o === 'H') return place(el, 2 * r + 2, 2 * c + 1, 0, 3);
+  return place(el, 2 * r + 1, 2 * c + 2, 3, 0);
+}
+
+function render() {
+  if (!state) return;
+  const n = state.n;
+  const tracks = [];
+  for (let i = 0; i < 2 * n - 1; i++) tracks.push((i % 2 ? GAP : CELL) + 'px');
+  board.style.gridTemplateColumns = tracks.join(' ');
+  board.style.gridTemplateRows = tracks.join(' ');
+  board.innerHTML = '';
+
+  const canAct = !busy && !state.done && state.legal.length > 0;
+  const dests = new Map();   // "r,c" -> action
+  const walls = new Map();   // "o,r,c" -> action
+  if (canAct) {
+    for (const m of state.legal) {
+      if (m.kind === 'move') dests.set(m.dest.join(','), m.action);
+      else walls.set(m.o + ',' + m.r + ',' + m.c, m.action);
+    }
+  }
+
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      const cell = place(div('cell'), 2 * r + 1, 2 * c + 1);
+      const action = dests.get(r + ',' + c);
+      if (mode === 'move' && action !== undefined) {
+        cell.classList.add('dest');
+        cell.onclick = () => post('/move', {action});
+      }
+    }
+  }
+
+  const pawn = (who) => {
+    const [r, c] = state.pos[who];
+    board.children[r * n + c].appendChild(div('pawn ' + who));
+  };
+  pawn('human');
+  pawn('bot');
+
+  for (const [r, c] of state.h_walls) wallEl('H', r, c, 'wall');
+  for (const [r, c] of state.v_walls) wallEl('V', r, c, 'wall');
+
+  if (mode !== 'move') {
+    for (const [key, action] of walls) {
+      const [o, r, c] = key.split(',');
+      if (o !== mode) continue;
+      const slot = place(div('slot'), 2 * +r + 2, 2 * +c + 2);
+      let ghost = null;
+      slot.onmouseenter = () => { ghost = wallEl(o, +r, +c, 'wall ghost'); };
+      slot.onmouseleave = () => { if (ghost) ghost.remove(); ghost = null; };
+      slot.onclick = () => post('/move', {action});
+    }
+  }
+
+  for (const [m, btn] of Object.entries(modeButtons)) {
+    btn.classList.toggle('active', m === mode);
+  }
+  modeButtons.H.disabled = modeButtons.V.disabled =
+      state.walls_left.human === 0;
+
+  if (state.done) {
+    statusEl.textContent = {
+      human: 'You win! \u{1F3C6}',
+      bot: 'Bot wins.',
+      draw: 'Draw.',
+    }[state.winner];
+  } else if (!busy) {
+    statusEl.textContent = 'Your move — reach the top row.';
+  }
+
+  const bits = [
+    `Walls — you: ${state.walls_left.human}, bot: ${state.walls_left.bot}`,
+  ];
+  if (state.value !== null) {
+    bits.push(`bot eval (your perspective): ${state.value.toFixed(2)}`);
+  }
+  if (state.last_bot) bits.push(`bot played: ${state.last_bot}`);
+  infoEl.textContent = bits.join('  ·  ');
+}
+
+post('/new');
+</script>
+</body>
+</html>
