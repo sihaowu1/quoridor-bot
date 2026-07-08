@@ -6,39 +6,38 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from alphazero.game_config import GAME_ACTIONS, GAME_OBS
-from alphazero.nn import PolicyV, PolicyP
+from alphazero.nn import AlphaZeroNet
 
 # ---------------------------------------------------------------------------
-# Shared networks.
+# Shared network.
 #
-# These are the ONE pair of networks used both by the MCTS rollouts (below) and
-# by the training driver in run.py (which imports these same objects).  Keeping
-# a single instance is what makes self-play actually improve: gradient updates
-# land on the exact networks the search uses to evaluate leaves.
+# This is the ONE dual-head network used both by the MCTS rollouts (below)
+# and by the training driver in run.py (which imports this same object).
+# Keeping a single instance is what makes self-play actually improve:
+# gradient updates land on the exact network the search uses to evaluate
+# leaves.
 #
 # Because observations are canonical (always from the perspective of the
-# player to move), a single value network serves both players: it always
+# player to move), a single value head serves both players: it always
 # answers "how good is this position for whoever moves next?".
 # ---------------------------------------------------------------------------
-policy_v = PolicyV()
-policy_v.compile(optimizer=keras.optimizers.Adam(),
-                 loss=tf.keras.losses.MeanSquaredError(),
-                 metrics=[tf.keras.metrics.MeanSquaredError()])
+network = AlphaZeroNet()
+# The losses live in the model's own train_step (the AlphaZero joint
+# MSE + cross-entropy + L2 objective, see nn.py); compile only attaches
+# the optimizer.
+network.compile(optimizer=keras.optimizers.Adam())
 
-policy_p = PolicyP()
-policy_p.compile(optimizer=keras.optimizers.Adam(),
-                 loss=tf.keras.losses.CategoricalCrossentropy(),
-                 metrics=[tf.keras.metrics.CategoricalCrossentropy()])
-
-# Single compiled graph for leaf evaluation.  Calling the Keras models
-# directly from Python (`policy_v(obs)`) rebuilds the eager call machinery on
-# every invocation; wrapping both forward passes in one tf.function with a
+# Single compiled graph for leaf evaluation.  Calling the Keras model
+# directly from Python (`network(obs)`) rebuilds the eager call machinery on
+# every invocation; wrapping the forward pass in one tf.function with a
 # fixed input signature makes each call a single graph execution, and the
 # `None` batch dimension lets the same graph serve any batch size (1 during
 # evaluation, PARALLEL_GAMES during batched self-play) without retracing.
+# training=False pins BatchNorm to inference mode (moving statistics).
 predict_fn = tf.function(
-    lambda x: (policy_v(x), policy_p(x)),
+    lambda x: network(x, training=False),
     input_signature=[tf.TensorSpec(shape=(None, GAME_OBS), dtype=tf.float32)],
+    jit_compile=True
 )
 
 # tunable constants

@@ -14,7 +14,7 @@ then open http://localhost:8000.  Environment knobs:
 
     AZ_PLAY_SIMS   MCTS simulations per bot move (default 200)
     AZ_PLAY_PORT   port (default 8000)
-    AZ_CHECKPOINT / AZ_WEIGHTS_V / AZ_WEIGHTS_P   see play/agent.py
+    AZ_CHECKPOINT / AZ_WEIGHTS   see play/agent.py
 """
 
 import json
@@ -24,7 +24,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from alphazero import mcts
 from alphazero.game_config import make_game
 from alphazero.quoridor import decode_action
-from play.agent import bot_move, load_networks
+from play.agent import bot_move, load_network
 
 HUMAN, BOT = 1, -1
 
@@ -153,7 +153,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     mcts.MCTS_POLICY_EXPLORE = int(os.environ.get('AZ_PLAY_SIMS', '200'))
-    print('loading networks:', load_networks())
+    print('loading network:', load_network())
     print(f'{mcts.MCTS_POLICY_EXPLORE} simulations per bot move')
 
     port = int(os.environ.get('AZ_PLAY_PORT', '8000'))

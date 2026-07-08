@@ -1,16 +1,16 @@
 """
-Inference-side glue: load trained weights into the shared MCTS networks and
+Inference-side glue: load trained weights into the shared MCTS network and
 answer "what does the bot play here?".
 
 Weight sources, in order of precedence:
   * AZ_CHECKPOINT=<path to training pickle>  -- the crash-safe checkpoint
-    written by run.py (restores both networks via alphazero.checkpoint);
-  * AZ_WEIGHTS_V / AZ_WEIGHTS_P              -- explicit .weights.h5 paths;
-  * default: checkpoints/<GAME_NAME>_policy_{v,p}.weights.h5 in the repo.
+    written by run.py (restores the network via alphazero.checkpoint);
+  * AZ_WEIGHTS                               -- explicit .weights.h5 path;
+  * default: checkpoints/<GAME_NAME>_net.weights.h5 in the repo.
 
-Because mcts.predict_fn closes over the module-level policy_v / policy_p
-instances, loading weights into them is all it takes for the search to play
-with the trained network.
+Because mcts.predict_fn closes over the module-level network instance,
+loading weights into it is all it takes for the search to play with the
+trained network.
 """
 
 import os
@@ -24,37 +24,32 @@ from alphazero.mcts import Node, Policy_Player_MCTS
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load_networks():
-    """Load trained weights into mcts.policy_v / mcts.policy_p.
+def load_network():
+    """Load trained weights into mcts.network.
 
     Returns a short description of what was loaded (for logging).
     """
     ckpt = os.environ.get('AZ_CHECKPOINT')
     if ckpt:
-        from alphazero.checkpoint import load_checkpoint, restore_networks
+        from alphazero.checkpoint import load_checkpoint, restore_network
         state = load_checkpoint(os.path.dirname(ckpt) or '.',
                                 os.path.basename(ckpt))
         if state is None:
             raise FileNotFoundError(f'no readable checkpoint at {ckpt}')
-        restore_networks(state, mcts.policy_v, mcts.policy_p, GAME_OBS)
+        restore_network(state, mcts.network, GAME_OBS)
         return f'checkpoint {ckpt}'
 
     default_dir = os.path.join(_ROOT, 'checkpoints')
-    v_path = os.environ.get(
-        'AZ_WEIGHTS_V',
-        os.path.join(default_dir, f'{GAME_NAME}_policy_v.weights.h5'))
-    p_path = os.environ.get(
-        'AZ_WEIGHTS_P',
-        os.path.join(default_dir, f'{GAME_NAME}_policy_p.weights.h5'))
+    path = os.environ.get(
+        'AZ_WEIGHTS',
+        os.path.join(default_dir, f'{GAME_NAME}_net.weights.h5'))
 
     # Subclassed keras models must be built (called once) before
     # load_weights can assign into them.
     dummy = np.zeros((1, GAME_OBS), dtype=np.float32)
-    mcts.policy_v(dummy)
-    mcts.policy_p(dummy)
-    mcts.policy_v.load_weights(v_path)
-    mcts.policy_p.load_weights(p_path)
-    return f'weights {v_path} + {p_path}'
+    mcts.network(dummy)
+    mcts.network.load_weights(path)
+    return f'weights {path}'
 
 
 def bot_move(game, observation):

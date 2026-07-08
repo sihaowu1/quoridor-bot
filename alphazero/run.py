@@ -2,7 +2,7 @@
 AlphaZero training driver (two-player self-play), crash-safe.
 
 Each episode plays one full game of self-play in which BOTH sides are moved
-by the same MCTS + networks.  Episodes run PARALLEL_GAMES at a time in
+by the same MCTS + network.  Episodes run PARALLEL_GAMES at a time in
 lock-step so that the MCTS leaf evaluations of all in-flight games are
 batched into single network calls (the GPU-efficiency win; see mcts.py).
 Every visited position is stored with:
@@ -48,18 +48,19 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from alphazero.game_config import make_game, GAME_NAME, GAME_ACTIONS, GAME_OBS
+from alphazero.nn import ARCH
 from alphazero.replay_buffer import ReplayBuffer
 from alphazero.checkpoint import (save_checkpoint, load_checkpoint,
-                                  restore_networks, restore_buffer,
+                                  restore_network, restore_buffer,
                                   restore_rng)
-# Import the SAME network instances the MCTS uses, so training the networks
+# Import the SAME network instance the MCTS uses, so training the network
 # actually improves self-play.
 from alphazero.mcts import (Node, Policy_Player_MCTS_batch, PARALLEL_GAMES,
-                            policy_v, policy_p)
+                            network)
 
 
-BUFFER_SIZE = 50000
-BATCH_SIZE = 128
+BUFFER_SIZE = 200000
+BATCH_SIZE = 512
 TRAIN_BATCHES_PER_EPISODE = 2
 
 EPISODES = int(os.environ.get('AZ_EPISODES', '300'))
@@ -79,11 +80,13 @@ CHECKPOINT_EVERY = int(os.environ.get('AZ_CHECKPOINT_EVERY', '1'))
 CHECKPOINT_FILE = f'{GAME_NAME}_train_state.pkl'
 
 # Validated against a checkpoint before resuming, so state from one game /
-# board size can never be silently loaded into another configuration.
+# board size / network architecture can never be silently loaded into
+# another configuration.
 CHECKPOINT_META = {
     'game': GAME_NAME,
     'actions': GAME_ACTIONS,
     'obs': GAME_OBS,
+    'arch': ARCH,
 }
 
 
@@ -164,20 +167,19 @@ def self_play_episode(replay_buffer):
     return self_play_episodes(replay_buffer, n_games=1)[0]
 
 
-def train_networks(replay_buffer):
-    """One gradient step per network on a sampled batch. Returns the losses."""
+def train_network(replay_buffer):
+    """One gradient step on the joint value + policy loss (see
+    nn.py train_step) over a sampled batch.
+    Returns (value loss, policy loss)."""
     experiences = replay_buffer.sample()
 
-    inputs = np.array([exp.obs for exp in experiences], dtype=np.float64)
+    inputs = np.array([exp.obs for exp in experiences], dtype=np.float32)
+    v_targets = np.array([[exp.v] for exp in experiences], dtype=np.float32)
+    p_targets = np.array([exp.p for exp in experiences], dtype=np.float32)
 
-    v_targets = np.array([[exp.v] for exp in experiences], dtype=np.float64)
-    loss_v = policy_v.train_on_batch(inputs, v_targets)
-
-    p_targets = np.array([exp.p for exp in experiences], dtype=np.float64)
-    loss_p = policy_p.train_on_batch(inputs, p_targets)
-
-    # train_on_batch returns [loss, metric] when metrics are compiled
-    return float(np.ravel(loss_v)[0]), float(np.ravel(loss_p)[0])
+    logs = network.train_on_batch(inputs, (v_targets, p_targets),
+                                  return_dict=True)
+    return float(logs['loss_v']), float(logs['loss_p'])
 
 
 class _EvalGame:
@@ -301,7 +303,7 @@ def train():
                 f'checkpoint in {CHECKPOINT_DIR} is for {state["meta"]}, '
                 f'but the current config is {CHECKPOINT_META}; move the '
                 f'old checkpoint away or point AZ_CHECKPOINT_DIR elsewhere')
-        restore_networks(state, policy_v, policy_p, GAME_OBS)
+        restore_network(state, network, GAME_OBS)
         restore_buffer(state, replay_buffer)
         restore_rng(state)
         histories = state['histories']
@@ -340,7 +342,7 @@ def train():
 
             if len(replay_buffer) > BATCH_SIZE:
                 for _ in range(TRAIN_BATCHES_PER_EPISODE):
-                    loss_v, loss_p = train_networks(replay_buffer)
+                    loss_v, loss_p = train_network(replay_buffer)
                 histories['v_losses'].append(loss_v)
                 histories['p_losses'].append(loss_p)
 
@@ -361,15 +363,13 @@ def train():
                    != (e - len(batch_results)) // CHECKPOINT_EVERY)
         if crossed or e == EPISODES:
             save_checkpoint(CHECKPOINT_DIR, CHECKPOINT_FILE, e,
-                            policy_v, policy_p, replay_buffer,
+                            network, replay_buffer,
                             histories, CHECKPOINT_META)
 
-    # persist the trained networks on their own (weights-only files usable
+    # persist the trained network on its own (a weights-only file usable
     # without the training state, namespaced by game)
-    policy_v.save_weights(
-        os.path.join(CHECKPOINT_DIR, f'{GAME_NAME}_policy_v.weights.h5'))
-    policy_p.save_weights(
-        os.path.join(CHECKPOINT_DIR, f'{GAME_NAME}_policy_p.weights.h5'))
+    network.save_weights(
+        os.path.join(CHECKPOINT_DIR, f'{GAME_NAME}_net.weights.h5'))
 
     _write_plots(histories)
 

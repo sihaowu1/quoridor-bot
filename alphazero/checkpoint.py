@@ -2,7 +2,7 @@
 Crash-safe training checkpoints for the AlphaZero driver.
 
 Everything needed to resume a run is captured in ONE pickle file:
-  * both networks' weights and their Adam optimizer states,
+  * the network's weights and its Adam optimizer state,
   * the full replay buffer,
   * the training metric histories (outcomes, lengths, losses, evals),
   * the Python / numpy RNG states,
@@ -44,16 +44,14 @@ def _restore_optimizer(model, state):
         var.assign(val)
 
 
-def save_checkpoint(directory, filename, episode, policy_v, policy_p,
+def save_checkpoint(directory, filename, episode, network,
                     replay_buffer, histories, meta):
     os.makedirs(directory, exist_ok=True)
     state = {
         'meta': dict(meta),
         'episode': episode,
-        'v_weights': policy_v.get_weights(),
-        'p_weights': policy_p.get_weights(),
-        'v_optimizer': _optimizer_state(policy_v),
-        'p_optimizer': _optimizer_state(policy_p),
+        'weights': network.get_weights(),
+        'optimizer': _optimizer_state(network),
         'buffer': [(np.asarray(e.obs), float(e.v), np.asarray(e.p))
                    for e in replay_buffer.memory],
         'histories': histories,
@@ -85,16 +83,21 @@ def load_checkpoint(directory, filename):
     return None
 
 
-def restore_networks(state, policy_v, policy_p, obs_dim):
+def restore_network(state, network, obs_dim):
+    if 'weights' not in state:
+        # 'v_weights'/'p_weights' era: two separate networks, incompatible
+        # with the dual-head architecture (run.py's meta check normally
+        # catches this first via the 'arch' key; this guards direct loads,
+        # e.g. play/agent.py with AZ_CHECKPOINT).
+        raise ValueError(
+            'checkpoint predates the dual-head network and cannot be '
+            'loaded; retrain, or check out the two-network revision')
     # Subclassed keras models must be built (called once) before weights
     # can be assigned.
-    dummy = np.zeros((1, obs_dim), dtype=np.float64)
-    policy_v(dummy)
-    policy_p(dummy)
-    policy_v.set_weights(state['v_weights'])
-    policy_p.set_weights(state['p_weights'])
-    _restore_optimizer(policy_v, state['v_optimizer'])
-    _restore_optimizer(policy_p, state['p_optimizer'])
+    dummy = np.zeros((1, obs_dim), dtype=np.float32)
+    network(dummy)
+    network.set_weights(state['weights'])
+    _restore_optimizer(network, state['optimizer'])
 
 
 def restore_buffer(state, replay_buffer):

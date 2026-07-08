@@ -3,6 +3,7 @@
 /.venv
 /__pycache__
 /alphazero/__pycache__
+/play/__pycache__
 /.claude
 /tasks
 /checkpoints

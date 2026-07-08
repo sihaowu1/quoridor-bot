@@ -6,8 +6,8 @@
 .
 ├── alphazero/
 │   ├── game_config.py           # the game the pipeline trains on
-│   ├── mcts.py                  # negamax PUCT search + shared networks
-│   ├── nn.py                    # policy / value MLPs
+│   ├── mcts.py                  # negamax PUCT search + shared network
+│   ├── nn.py                    # dual-head residual network (policy + value)
 │   ├── run.py                   # self-play training driver (auto-resumes)
 │   ├── checkpoint.py            # crash-safe save/restore of training state
 │   ├── quoridor.py              # Quoridor environment (pure-Python reference) + self-tests
@@ -96,7 +96,7 @@ AZ_GAME=ttt python -m alphazero.run
 ## Play against the bot
 
 A minimal stdlib-only web UI (no extra dependencies): a local HTTP server
-loads the trained networks into the same MCTS the training uses, and a
+loads the trained network into the same MCTS the training uses, and a
 single HTML page renders the board.  You are the blue pawn at the bottom,
 moving first, aiming for the top row.
 
@@ -104,11 +104,9 @@ moving first, aiming for the top row.
 # with the training checkpoint downloaded from Drive
 AZ_CHECKPOINT=path/to/Quoridor_train_state.pkl python -m play.server
 
-# or with saved .weights.h5 files (defaults shown; must match the CURRENT
+# or with a saved .weights.h5 file (default shown; must match the CURRENT
 # architecture and BOARD_SIZE in game_config.py)
-AZ_WEIGHTS_V=checkpoints/Quoridor_policy_v.weights.h5 \
-AZ_WEIGHTS_P=checkpoints/Quoridor_policy_p.weights.h5 \
-python -m play.server
+AZ_WEIGHTS=checkpoints/Quoridor_net.weights.h5 python -m play.server
 ```
 
 Then open <http://localhost:8000>.  Click a highlighted cell to move; pick
@@ -121,7 +119,7 @@ stronger and slower), `AZ_PLAY_PORT` (default 8000), and the usual
 
 This section provides an explanation of the AlphaZero algorithm in simple terms. 
 
-At the core, AlphaZero is two neural networks (nn) and a Monte Carlo Tree Search (MCTS). 
+At the core, AlphaZero is a neural network (nn) and a Monte Carlo Tree Search (MCTS). 
 
 ### MCTS
 
@@ -140,13 +138,13 @@ But, how does MCTS know what is the "most promising" branch?
 
 ### Neural Networks
 
-AlphaZero uses two neural networks (or combined into one): policy and value. Policy gives a probability distribution over all legal moves, where a higher probability represents a preference. Value gives a score for the current board state, where a more positive number means good and a more negative position means bad. 
+AlphaZero uses one neural network with two outputs (heads): policy and value. Policy gives a probability distribution over all legal moves, where a higher probability represents a preference. Value gives a score for the current board state, where a more positive number means good and a more negative position means bad. 
 
 ### Training
 
 AlphaZero trains via self-play. Each move, it does the following:
 
-* Check the next possible moves from the current board state. Choose the move with either a low visit count or that looks promising according to the two nns. 
+* Check the next possible moves from the current board state. Choose the move with either a low visit count or that looks promising according to the nn. 
 * Repeat until a game is done. 
 * There's an outcome, so update the nns and the MCTS accordingly. 
 
