@@ -58,7 +58,7 @@ else:
     # BOARD_SIZE = 9, WALLS = 10 (expect training to need far more
     # compute; see README).
     BOARD_SIZE = 9
-    WALLS = 3
+    WALLS = 10
     # Truncation cap (draw) on self-play games.  Tighter than the engine
     # default of 800: near-cap games are almost pure noise for the replay
     # buffer, and in lock-step self-play one long game gates the whole
